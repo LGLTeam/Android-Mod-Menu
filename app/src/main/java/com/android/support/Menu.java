@@ -33,6 +33,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
+import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -59,6 +60,7 @@ import java.util.List;
 
 import static android.view.ViewGroup.LayoutParams.WRAP_CONTENT;
 import static android.view.ViewGroup.LayoutParams.MATCH_PARENT;
+import static android.view.WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS;
 import static android.widget.RelativeLayout.ALIGN_PARENT_LEFT;
 import static android.widget.RelativeLayout.ALIGN_PARENT_RIGHT;
 
@@ -92,6 +94,7 @@ public class Menu {
     int SeekBarProgressColor = Color.parseColor("#80CBC4");
     int CheckBoxColor = Color.parseColor("#80CBC4");
     int RadioColor = Color.parseColor("#FFFFFF");
+	int CollapseColor = Color.parseColor("#232F2C");
     String NumberTxtColor = "#41c300";
     //********************************************************************//
 
@@ -179,7 +182,7 @@ public class Menu {
                 "</html>", "text/html", "utf-8");
         wView.setBackgroundColor(0x00000000); //Transparent
         wView.setAlpha(ICON_ALPHA);
-        wView.getSettings().setAppCacheEnabled(true);
+        wView.getSettings().setCacheMode(WebSettings.LOAD_NO_CACHE);
         wView.setOnTouchListener(onTouchListener());
 
         //********** Settings icon **********
@@ -350,7 +353,12 @@ public class Menu {
     public void SetWindowManagerWindowService() {
         //Variable to check later if the phone supports Draw over other apps permission
         int iparams = Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O ? 2038 : 2002;
-        vmParams = new WindowManager.LayoutParams(WRAP_CONTENT, WRAP_CONTENT, iparams, 8, -3);
+        vmParams = new WindowManager.LayoutParams(
+                WRAP_CONTENT,
+                WRAP_CONTENT,
+                iparams,
+                8 | FLAG_TRANSLUCENT_STATUS,
+                -3);
         //params = new WindowManager.LayoutParams(WindowManager.LayoutParams.LAST_APPLICATION_WINDOW, 8, -3);
         vmParams.gravity = 51;
         vmParams.x = POS_X;
@@ -491,6 +499,12 @@ public class Menu {
                         InputNum(linearLayout, featNum, strSplit[2], Integer.parseInt(strSplit[1]));
                     if (strSplit.length == 2)
                         InputNum(linearLayout, featNum, strSplit[1], 0);
+						break;
+                case "InputLValue":
+                    if (strSplit.length == 3)
+                        InputLNum(linearLayout, featNum, strSplit[2], Long.parseLong(strSplit[1]));
+                    if (strSplit.length == 2)
+                        InputLNum(linearLayout, featNum, strSplit[1], 0);
                     break;
                 case "CheckBox":
                     CheckBox(linearLayout, featNum, strSplit[1], switchedOn);
@@ -740,7 +754,7 @@ public class Menu {
 
         final Button button = new Button(getContext);
         int num = Preferences.loadPrefInt(featName, featNum);
-        button.setText(Html.fromHtml(featName + ": <font color='" + NumberTxtColor + "'>" + ((num == 0) ? 1 : num) + "</font>"));
+        button.setText(Html.fromHtml(featName + ": <font color='" + NumberTxtColor + "'>" + num + "</font>"));
         button.setAllCaps(false);
         button.setLayoutParams(layoutParams);
         button.setBackgroundColor(BTN_COLOR);
@@ -781,18 +795,106 @@ public class Menu {
                     public void onClick(DialogInterface dialog, int whichButton) {
                         int num;
                         try {
-                            num = Integer.parseInt(TextUtils.isEmpty(editText.getText().toString()) ? "0" : editText.getText().toString());
+                            String inp = editText.getText().toString();
+                            num = Integer.parseInt(inp.isEmpty() ? "0" : inp);
                             if (maxValue != 0 && num >= maxValue)
                                 num = maxValue;
                         } catch (NumberFormatException ex) {
                             if (maxValue != 0)
                                 num = maxValue;
                             else
-                                num = 2147483640;
+                                num = Integer.MAX_VALUE;
                         }
 
                         button.setText(Html.fromHtml(featName + ": <font color='" + NumberTxtColor + "'>" + num + "</font>"));
                         Preferences.changeFeatureInt(featName, featNum, num);
+editText.setFocusable(false);
+                    }
+                });
+
+                alertName.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int whichButton) {
+                        // dialog.cancel(); // closes dialog
+                        InputMethodManager imm = (InputMethodManager) getContext.getSystemService(getContext.INPUT_METHOD_SERVICE);
+                        imm.toggleSoftInput(InputMethodManager.HIDE_IMPLICIT_ONLY, 0);
+                    }
+                });
+
+                if (overlayRequired) {
+                    AlertDialog dialog = alertName.create(); // display the dialog
+                    dialog.getWindow().setType(Build.VERSION.SDK_INT >= 26 ? 2038 : 2002);
+                    dialog.show();
+                } else {
+                    alertName.show();
+                }
+            }
+        });
+
+        linearLayout.addView(button);
+        linLayout.addView(linearLayout);
+    }
+
+    private void InputLNum(LinearLayout linLayout, final int featNum, final String featName, final long maxValue) {
+        LinearLayout linearLayout = new LinearLayout(getContext);
+        LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(MATCH_PARENT, MATCH_PARENT);
+        layoutParams.setMargins(7, 5, 7, 5);
+
+        final Button button = new Button(getContext);
+        long num = Preferences.loadPrefLong(featName, featNum);
+        button.setText(Html.fromHtml(featName + ": <font color='" + NumberTxtColor + "'>" + num + "</font>"));
+        button.setAllCaps(false);
+        button.setLayoutParams(layoutParams);
+        button.setBackgroundColor(BTN_COLOR);
+        button.setTextColor(TEXT_COLOR_2);
+        button.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                AlertDialog.Builder alertName = new AlertDialog.Builder(getContext);
+                final EditText editText = new EditText(getContext);
+                if (maxValue != 0)
+                    editText.setHint("Max value: " + maxValue);
+                editText.setInputType(InputType.TYPE_CLASS_NUMBER);
+                editText.setKeyListener(DigitsKeyListener.getInstance("0123456789-"));
+                InputFilter[] FilterArray = new InputFilter[1];
+                FilterArray[0] = new InputFilter.LengthFilter(20);
+                editText.setFilters(FilterArray);
+                editText.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+                    @Override
+                    public void onFocusChange(View v, boolean hasFocus) {
+                        InputMethodManager imm = (InputMethodManager) getContext.getSystemService(getContext.INPUT_METHOD_SERVICE);
+                        if (hasFocus) {
+                            imm.toggleSoftInput(InputMethodManager.SHOW_FORCED, InputMethodManager.HIDE_IMPLICIT_ONLY);
+                        } else {
+                            imm.toggleSoftInput(InputMethodManager.HIDE_IMPLICIT_ONLY, 0);
+                        }
+                    }
+                });
+                editText.requestFocus();
+
+                alertName.setTitle("Input number");
+                alertName.setView(editText);
+                LinearLayout layoutName = new LinearLayout(getContext);
+                layoutName.setOrientation(LinearLayout.VERTICAL);
+                layoutName.addView(editText); // displays the user input bar
+                alertName.setView(layoutName);
+
+                alertName.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int whichButton) {
+                        long num;
+                        try {
+                            String inp = editText.getText().toString();
+                            num = Long.parseLong(inp.isEmpty() ? "0" : inp);
+                            if (maxValue != 0 && num >= maxValue)
+                                num = maxValue;
+                        } catch (NumberFormatException ex) {
+                            if (maxValue != 0)
+                                num = maxValue;
+                            else
+                                num = Long.MAX_VALUE;
+                        }
+
+                        button.setText(Html.fromHtml(featName + ": <font color='" + NumberTxtColor + "'>" + num + "</font>"));
+                        Preferences.changeFeatureLong(featName, featNum, num);
 
                         editText.setFocusable(false);
                     }
@@ -969,7 +1071,7 @@ public class Menu {
         mCollapse = collapseSub;
 
         final TextView textView = new TextView(getContext);
-        textView.setBackgroundColor(CategoryBG);
+        textView.setBackgroundColor(CollapseColor);
         textView.setText("▽ " + text + " ▽");
         textView.setGravity(Gravity.CENTER);
         textView.setTextColor(TEXT_COLOR_2);
@@ -1027,7 +1129,7 @@ public class Menu {
         wView.loadData(text, "text/html", "utf-8");
         wView.setBackgroundColor(0x00000000); //Transparent
         wView.setPadding(0, 5, 0, 5);
-        wView.getSettings().setAppCacheEnabled(false);
+        wView.getSettings().setCacheMode(WebSettings.LOAD_NO_CACHE);
         linLayout.addView(wView);
     }
 
