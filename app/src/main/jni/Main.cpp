@@ -11,22 +11,14 @@
 #include "Includes/Logger.h"
 #include "Includes/obfuscate.h"
 #include "Includes/Utils.h"
-
 #include "KittyMemory/MemoryPatch.h"
-#include "Menu.h"
+
+#include "Menu/Register.h"
 
 //Target lib here
 #define targetLibName OBFUSCATE("libFileA.so")
 
 #include "Includes/Macros.h"
-
-// fancy struct for patches for kittyMemory
-struct My_Patches {
-    // let's assume we have patches for these functions for whatever game
-    // like show in miniMap boolean function
-    MemoryPatch GodMode, GodMode2, SliderExample;
-    // etc...
-} hexPatches;
 
 bool feature1, feature2, featureHookToggle, Health;
 int sliderValue = 1, level = 0;
@@ -88,18 +80,6 @@ void *hack_thread(void *) {
     LOGI(OBFUSCATE("%s has been loaded"), (const char *) targetLibName);
 
 #if defined(__aarch64__) //To compile this code for arm64 lib only. Do not worry about greyed out highlighting code, it still works
-    // New way to patch hex via KittyMemory without need to  specify len. Spaces or without spaces are fine
-    // ARM64 assembly example
-    // MOV X0, #0x0 = 00 00 80 D2
-    // RET = C0 03 5F D6
-    hexPatches.GodMode = MemoryPatch::createWithHex(targetLibName,
-                                                    string2Offset(OBFUSCATE("0x123456")),
-                                                    OBFUSCATE("00 00 80 D2 C0 03 5F D6"));
-    //You can also specify target lib like this
-    hexPatches.GodMode2 = MemoryPatch::createWithHex("libtargetLibHere.so",
-                                                     string2Offset(OBFUSCATE("0x222222")),
-                                                     OBFUSCATE("20 00 80 D2 C0 03 5F D6"));
-
     // Hook example. Comment out if you don't use hook
     // Strings in macros are automatically obfuscated. No need to obfuscate!
     HOOK("str", FunctionExample, old_FunctionExample);
@@ -112,23 +92,12 @@ void *hack_thread(void *) {
     HOOKSYM_LIB_NO_ORIG("libFileB.so", "__SymbolNameExample", FunctionExample);
 
     // Patching offsets directly. Strings are automatically obfuscated too!
-    PATCHOFFSET("0x20D3A8", "00 00 A0 E3 1E FF 2F E1");
-    PATCHOFFSET_LIB("libFileB.so", "0x20D3A8", "00 00 A0 E3 1E FF 2F E1");
+    PATCH("0x20D3A8", "00 00 A0 E3 1E FF 2F E1");
+    PATCH_LIB("libFileB.so", "0x20D3A8", "00 00 A0 E3 1E FF 2F E1");
 
     AddMoneyExample = (void(*)(void *,int))getAbsoluteAddress(targetLibName, 0x123456);
 
 #else //To compile this code for armv7 lib only.
-    // New way to patch hex via KittyMemory without need to specify len. Spaces or without spaces are fine
-    // ARMv7 assembly example
-    // MOV R0, #0x0 = 00 00 A0 E3
-    // BX LR = 1E FF 2F E1
-    hexPatches.GodMode = MemoryPatch::createWithHex(targetLibName, //Normal obfuscate
-                                                    string2Offset(OBFUSCATE("0x123456")),
-                                                    OBFUSCATE("00 00 A0 E3 1E FF 2F E1"));
-    //You can also specify target lib like this
-    hexPatches.GodMode2 = MemoryPatch::createWithHex("libtargetLibHere.so",
-                                                     string2Offset(OBFUSCATE("0x222222")),
-                                                     OBFUSCATE("01 00 A0 E3 1E FF 2F E1"));
 
     // Hook example. Comment out if you don't use hook
     // Strings in macros are automatically obfuscated. No need to obfuscate!
@@ -142,19 +111,28 @@ void *hack_thread(void *) {
     HOOKSYM_LIB_NO_ORIG("libFileB.so", "__SymbolNameExample", FunctionExample);
 
     // Patching offsets directly. Strings are automatically obfuscated too!
-    PATCHOFFSET("0x20D3A8", "00 00 A0 E3 1E FF 2F E1");
-    PATCHOFFSET_LIB("libFileB.so", "0x20D3A8", "00 00 A0 E3 1E FF 2F E1");
+    PATCH("0x20D3A8", "00 00 A0 E3 1E FF 2F E1");
+    PATCH_LIB("libFileB.so", "0x20D3A8", "00 00 A0 E3 1E FF 2F E1");
+
+    //Restore changes to original
+    RESTORE("0x20D3A8");
+    RESTORE_LIB("libFileB.so", "0x20D3A8");
 
     AddMoneyExample = (void (*)(void *, int)) getAbsoluteAddress(targetLibName, 0x123456);
 
     LOGI(OBFUSCATE("Done"));
 #endif
 
+    //Anti-leech
+    /*if (!iconValid || !initValid || !settingsValid) {
+        //Bad function to make it crash
+        sleep(5);
+        int *p = 0;
+        *p = 0;
+    }*/
+
     return NULL;
 }
-
-//JNI calls
-extern "C" {
 
 // Do not change or translate the first text unless you know what you are doing
 // Assigning feature numbers is optional. Without it, it will automatically count for you, starting from 0
@@ -163,13 +141,8 @@ extern "C" {
 // Toggle, ButtonOnOff and Checkbox can be switched on by default, if you add True_. Example: CheckBox_True_The Check Box
 // To learn HTML, go to this page: https://www.w3schools.com/
 
-JNIEXPORT jobjectArray
-JNICALL
-Java_uk_lgl_modmenu_FloatingModMenuService_getFeatureList(JNIEnv *env, jobject context) {
+jobjectArray GetFeatureList(JNIEnv *env, jobject context) {
     jobjectArray ret;
-
-    //Toasts added here so it's harder to remove it
-    MakeToast(env, context, OBFUSCATE("Modded by LGL"), Toast::LENGTH_LONG);
 
     const char *features[] = {
             OBFUSCATE("Category_The Category"), //Not counted
@@ -221,14 +194,10 @@ Java_uk_lgl_modmenu_FloatingModMenuService_getFeatureList(JNIEnv *env, jobject c
     for (int i = 0; i < Total_Feature; i++)
         env->SetObjectArrayElement(ret, i, env->NewStringUTF(features[i]));
 
-    pthread_t ptid;
-    pthread_create(&ptid, NULL, antiLeech, NULL);
-
     return (ret);
 }
 
-JNIEXPORT void JNICALL
-Java_uk_lgl_modmenu_Preferences_Changes(JNIEnv *env, jclass clazz, jobject obj,
+void Changes(JNIEnv *env, jclass clazz, jobject obj,
                                         jint featNum, jstring featName, jint value,
                                         jboolean boolean, jstring str) {
 
@@ -240,23 +209,25 @@ Java_uk_lgl_modmenu_Preferences_Changes(JNIEnv *env, jclass clazz, jobject obj,
 
     switch (featNum) {
         case 0:
-            feature2 = boolean;
-            if (feature2) {
-                // To print bytes you can do this
-                //if (hexPatches.GodMode.Modify()) {
-                //    LOGD(OBFUSCATE("Current Bytes: %s"),
-                //         hexPatches.GodMode.get_CurrBytes().c_str());
-                //}
-                hexPatches.GodMode.Modify();
-                hexPatches.GodMode2.Modify();
-                //LOGI(OBFUSCATE("On"));
-            } else {
-                hexPatches.GodMode.Restore();
-                hexPatches.GodMode2.Restore();
-                //LOGI(OBFUSCATE("Off"));
-            }
+            // A much simpler way to patch hex via KittyMemory without need to specify the struct and len. Spaces or without spaces are fine
+            // ARMv7 assembly example
+            // MOV R0, #0x0 = 00 00 A0 E3
+            // BX LR = 1E FF 2F E1
+            PATCH_LIB_SWITCH("libil2cpp.so", "0x100000", "00 00 A0 E3 1E FF 2F E1", boolean);
             break;
         case 100:
+            //Reminder that the strings are auto obfuscated
+            //Switchable patch
+            PATCH_SWITCH("0x400000", "00 00 A0 E3 1E FF 2F E1", boolean);
+            PATCH_LIB_SWITCH("libil2cpp.so", "0x200000", "00 00 A0 E3 1E FF 2F E1", boolean);
+            PATCH_SYM_SWITCH("_SymbolExample", "00 00 A0 E3 1E FF 2F E1", boolean);
+            PATCH_LIB_SYM_SWITCH("libNativeGame.so", "_SymbolExample", "00 00 A0 E3 1E FF 2F E1", boolean);
+
+            //Restore patched offset to original
+            RESTORE("0x400000");
+            RESTORE_LIB("libil2cpp.so", "0x400000");
+            RESTORE_SYM("_SymbolExample");
+            RESTORE_LIB_SYM("libil2cpp.so", "_SymbolExample");
             break;
         case 110:
             break;
@@ -269,29 +240,13 @@ Java_uk_lgl_modmenu_Preferences_Changes(JNIEnv *env, jclass clazz, jobject obj,
             switch (value) {
                 //For noobies
                 case 0:
-                    hexPatches.SliderExample = MemoryPatch::createWithHex(
-                            targetLibName, string2Offset(
-                                    OBFUSCATE("0x100000")),
-                            OBFUSCATE(
-                                    "00 00 A0 E3 1E FF 2F E1"));
-                    hexPatches.SliderExample.Modify();
+                    RESTORE("0x0");
                     break;
                 case 1:
-                    hexPatches.SliderExample = MemoryPatch::createWithHex(
-                            targetLibName, string2Offset(
-                                    OBFUSCATE("0x100000")),
-                            OBFUSCATE(
-                                    "01 00 A0 E3 1E FF 2F E1"));
-                    hexPatches.SliderExample.Modify();
+                    PATCH("0x0", "01 00 A0 E3 1E FF 2F E1");
                     break;
                 case 2:
-                    hexPatches.SliderExample = MemoryPatch::createWithHex(
-                            targetLibName,
-                            string2Offset(
-                                    OBFUSCATE("0x100000")),
-                            OBFUSCATE(
-                                    "02 00 A0 E3 1E FF 2F E1"));
-                    hexPatches.SliderExample.Modify();
+                    PATCH("0x0", "02 00 A0 E3 1E FF 2F E1");
                     break;
             }
             break;
@@ -323,12 +278,10 @@ Java_uk_lgl_modmenu_Preferences_Changes(JNIEnv *env, jclass clazz, jobject obj,
             level = value;
             break;
         case 8:
-            //MakeToast(env, obj, TextInput, Toast::LENGTH_SHORT);
             break;
         case 9:
             break;
     }
-}
 }
 
 //No need to use JNI_OnLoad, since we don't use JNIEnv
@@ -340,11 +293,39 @@ void lib_main() {
     pthread_create(&ptid, NULL, hack_thread, NULL);
 }
 
-/*
+extern "C"
 JNIEXPORT jint JNICALL
 JNI_OnLoad(JavaVM *vm, void *reserved) {
-    JNIEnv *globalEnv;
-    vm->GetEnv((void **) &globalEnv, JNI_VERSION_1_6);
+    JNIEnv *env;
+
+    vm->GetEnv((void **) &env, JNI_VERSION_1_6);
+
+    static const JNINativeMethod menuMethods[] = {
+            {OBFUSCATE("Icon"), OBFUSCATE("()Ljava/lang/String;"), reinterpret_cast<void *>(Icon)},
+            {OBFUSCATE("IconWebViewData"),  OBFUSCATE("()Ljava/lang/String;"), reinterpret_cast<void *>(IconWebViewData)},
+            {OBFUSCATE("IsGameLibLoaded"),  OBFUSCATE("()Z"), reinterpret_cast<void *>(isGameLibLoaded)},
+            {OBFUSCATE("Init"),  OBFUSCATE("(Landroid/content/Context;Landroid/widget/TextView;Landroid/widget/TextView;)V"), reinterpret_cast<void *>(Init)},
+            {OBFUSCATE("SettingsList"),  OBFUSCATE("()[Ljava/lang/String;"), reinterpret_cast<void *>(SettingsList)},
+            {OBFUSCATE("GetFeatureList"),  OBFUSCATE("()[Ljava/lang/String;"), reinterpret_cast<void *>(GetFeatureList)},
+    };
+
+    if (Register(env, "com/android/support/Menu", menuMethods, sizeof(menuMethods) / sizeof(JNINativeMethod)) != 0)
+        return JNI_ERR;
+
+    static const JNINativeMethod prefMethods[] = {
+            { OBFUSCATE("Changes"), OBFUSCATE("(Landroid/content/Context;ILjava/lang/String;IZLjava/lang/String;)V"), reinterpret_cast<void *>(Changes)},
+    };
+
+    if (Register(env, "com/android/support/Preferences",
+                 prefMethods, sizeof(prefMethods) / sizeof(JNINativeMethod)) != 0)
+        return JNI_ERR;
+
+    static const JNINativeMethod mainMethods[] = {
+            { OBFUSCATE("CheckOverlayPermission"), OBFUSCATE("(Landroid/content/Context;)V"), reinterpret_cast<void *>(CheckOverlayPermission)},
+    };
+
+    if (Register(env, "com/android/support/Main", mainMethods, sizeof(mainMethods) / sizeof(JNINativeMethod)) != 0)
+        return JNI_ERR;
+
     return JNI_VERSION_1_6;
 }
- */

@@ -1,16 +1,12 @@
-package uk.lgl.modmenu;
+package com.android.support;
 
 import android.annotation.TargetApi;
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.preference.PreferenceManager;
-import android.util.Log;
 import android.os.Build;
 
 import java.util.LinkedHashSet;
 import java.util.Set;
-
-import static android.preference.PreferenceManager.getDefaultSharedPreferences;
 
 public class Preferences {
     private static SharedPreferences sharedPreferences;

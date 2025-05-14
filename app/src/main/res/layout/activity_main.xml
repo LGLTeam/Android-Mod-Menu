@@ -5,5 +5,5 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="#202020"
-    tools:context="uk.lgl.MainActivity">
+    tools:context="com.android.support.MainActivity">
 </FrameLayout>
