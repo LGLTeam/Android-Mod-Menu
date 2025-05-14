@@ -28,8 +28,7 @@ public class Main {
             menu.SetWindowManagerActivity();
             menu.ShowMenu();
         } else {
-            //Anything else, ask for permission
-            CheckOverlayPermission(context);
+            Toast.makeText(context, "Failed to launch the mod menu\n", Toast.LENGTH_LONG).show();
         }
     }
 

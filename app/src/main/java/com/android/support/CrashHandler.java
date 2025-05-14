@@ -16,6 +16,8 @@ import android.content.pm.PackageManager;
 import android.content.res.Resources;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.text.Html;
 import android.text.InputFilter;
 import android.text.InputType;
@@ -64,7 +66,7 @@ public final class CrashHandler {
                 }
             }
 
-            private void tryUncaughtException(Thread thread, Throwable throwable) {
+            private void tryUncaughtException(Thread thread, Throwable throwable) throws InterruptedException {
                 Log.e("AppCrash", "Try saving log");
 
                 final String time = new SimpleDateFormat("yyyy_MM_dd-HH_mm_ss").format(new Date());
@@ -121,8 +123,6 @@ public final class CrashHandler {
                 Toast.makeText(app, "Log saved to: " + String.valueOf(crashFile).replace("/storage/emulated/0/", ""), Toast.LENGTH_LONG).show();
 
                 Log.e("AppCrash", "Done");
-
-                System.exit(2);
             }
 
             private void writeFile(File file, String content) throws IOException {

@@ -25,11 +25,10 @@ std::cout << obfuscated_string << std::endl;
 #include <string>
 
 #ifndef AY_OBFUSCATE_DEFAULT_KEY
+#define AY_OBFUSCATE_DEFAULT_KEY ay::generate_key(__LINE__)
 // The default 64 bit key to obfuscate strings with.
 // This can be user specified by defining AY_OBFUSCATE_DEFAULT_KEY before
 // including obfuscate.h
-#define AY_OBFUSCATE_DEFAULT_KEY ay::generate_key(__LINE__)
-#endif
 
 namespace ay
 {
@@ -194,14 +193,14 @@ namespace ay
 // functions for decrypting the string and is also implicitly convertable to a
 // char*
 #define OBFUSCATE_KEY(data, key) \
-	[]() -> ay::obfuscated_data<sizeof(data)/sizeof(data[0]), key>& { \
-		static_assert(sizeof(decltype(key)) == sizeof(ay::key_type), "key must be a 64 bit unsigned integer"); \
-		static_assert((key) >= (1ull << 56), "key must span all 8 bytes"); \
-		constexpr auto n = sizeof(data)/sizeof(data[0]); \
-		constexpr auto obfuscator = ay::make_obfuscator<n, key>(data); \
-		static auto obfuscated_data = ay::obfuscated_data<n, key>(obfuscator); \
-		return obfuscated_data; \
-	}()
+    []() -> ay::obfuscated_data<sizeof(data)/sizeof(data[0]), key>& { \
+        static_assert(sizeof(decltype(key)) == sizeof(ay::key_type), "key must be a 64 bit unsigned integer"); \
+        static_assert((key) >= (1ull << 56), "key must span all 8 bytes"); \
+        constexpr auto n = sizeof(data)/sizeof(data[0]); \
+        constexpr auto obfuscator = ay::make_obfuscator<n, key>(data); \
+        static auto obfuscated_data = ay::obfuscated_data<n, key>(obfuscator); \
+        return obfuscated_data; \
+    }()
 
 /* -------------------------------- LICENSE ------------------------------------
 Public Domain (http://www.unlicense.org)
@@ -222,3 +221,4 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF
 CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 ----------------------------------------------------------------------------- */
+#endif

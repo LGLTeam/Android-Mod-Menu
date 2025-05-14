@@ -1,9 +1,10 @@
 #include <list>
 #include <vector>
-#include <string.h>
+#include <cstring>
 #include <pthread.h>
 #include <thread>
 #include <cstring>
+#include <string>
 #include <jni.h>
 #include <unistd.h>
 #include <fstream>
@@ -11,128 +12,20 @@
 #include <dlfcn.h>
 #include "Includes/Logger.h"
 #include "Includes/obfuscate.h"
-#include "Includes/Utils.h"
-#include "KittyMemory/MemoryPatch.h"
-#include "Menu/Setup.h"
-
-//Target lib here
-#define targetLibName OBFUSCATE("libFileA.so")
-
+#include "Includes/Utils.hpp"
+#include "Menu/Menu.hpp"
+#include "Menu/Jni.hpp"
 #include "Includes/Macros.h"
 
-bool feature1, feature2, featureHookToggle, Health;
-int sliderValue = 1, level = 0;
-void *instanceBtn;
+bool noDeath;
+int scoreMul = 1, coinsMul = 1;
 
-// Hooking examples. Assuming you know how to write hook
-void (*AddMoneyExample)(void *instance, int amount);
-
-bool (*old_get_BoolExample)(void *instance);
-bool get_BoolExample(void *instance) {
-    if (instance != NULL && featureHookToggle) {
-        return true;
-    }
-    return old_get_BoolExample(instance);
-}
-
-float (*old_get_FloatExample)(void *instance);
-float get_FloatExample(void *instance) {
-    if (instance != NULL && sliderValue > 1) {
-        return (float) sliderValue;
-    }
-    return old_get_FloatExample(instance);
-}
-
-int (*old_Level)(void *instance);
-int Level(void *instance) {
-    if (instance != NULL && level) {
-        return (int) level;
-    }
-    return old_Level(instance);
-}
-
-void (*old_FunctionExample)(void *instance);
-void FunctionExample(void *instance) {
-    instanceBtn = instance;
-    if (instance != NULL) {
-        if (Health) {
-            *(int *) ((uint64_t) instance + 0x48) = 999;
-        }
-    }
-    return old_FunctionExample(instance);
-}
-
-// we will run our hacks in a new thread so our while loop doesn't block process main thread
-void *hack_thread(void *) {
-    LOGI(OBFUSCATE("pthread created"));
-
-    //Check if target lib is loaded
-    do {
-        sleep(1);
-    } while (!isLibraryLoaded(targetLibName));
-
-    //Anti-lib rename
-    /*
-    do {
-        sleep(1);
-    } while (!isLibraryLoaded("libYOURNAME.so"));*/
-
-    LOGI(OBFUSCATE("%s has been loaded"), (const char *) targetLibName);
-
-#if defined(__aarch64__) //To compile this code for arm64 lib only. Do not worry about greyed out highlighting code, it still works
-    // Hook example. Comment out if you don't use hook
-    // Strings in macros are automatically obfuscated. No need to obfuscate!
-    HOOK("str", FunctionExample, old_FunctionExample);
-    HOOK_LIB("libFileB.so", "0x123456", FunctionExample, old_FunctionExample);
-    HOOK_NO_ORIG("0x123456", FunctionExample);
-    HOOK_LIB_NO_ORIG("libFileC.so", "0x123456", FunctionExample);
-    HOOKSYM("__SymbolNameExample", FunctionExample, old_FunctionExample);
-    HOOKSYM_LIB("libFileB.so", "__SymbolNameExample", FunctionExample, old_FunctionExample);
-    HOOKSYM_NO_ORIG("__SymbolNameExample", FunctionExample);
-    HOOKSYM_LIB_NO_ORIG("libFileB.so", "__SymbolNameExample", FunctionExample);
-
-    // Patching offsets directly. Strings are automatically obfuscated too!
-    PATCH("0x20D3A8", "00 00 A0 E3 1E FF 2F E1");
-    PATCH_LIB("libFileB.so", "0x20D3A8", "00 00 A0 E3 1E FF 2F E1");
-
-    AddMoneyExample = (void(*)(void *,int))getAbsoluteAddress(targetLibName, 0x123456);
-
-#else //To compile this code for armv7 lib only.
-
-    // Hook example. Comment out if you don't use hook
-    // Strings in macros are automatically obfuscated. No need to obfuscate!
-    HOOK("str", FunctionExample, old_FunctionExample);
-    HOOK_LIB("libFileB.so", "0x123456", FunctionExample, old_FunctionExample);
-    HOOK_NO_ORIG("0x123456", FunctionExample);
-    HOOK_LIB_NO_ORIG("libFileC.so", "0x123456", FunctionExample);
-    HOOKSYM("__SymbolNameExample", FunctionExample, old_FunctionExample);
-    HOOKSYM_LIB("libFileB.so", "__SymbolNameExample", FunctionExample, old_FunctionExample);
-    HOOKSYM_NO_ORIG("__SymbolNameExample", FunctionExample);
-    HOOKSYM_LIB_NO_ORIG("libFileB.so", "__SymbolNameExample", FunctionExample);
-
-    // Patching offsets directly. Strings are automatically obfuscated too!
-    PATCH("0x20D3A8", "00 00 A0 E3 1E FF 2F E1");
-    PATCH_LIB("libFileB.so", "0x20D3A8", "00 00 A0 E3 1E FF 2F E1");
-
-    //Restore changes to original
-    RESTORE("0x20D3A8");
-    RESTORE_LIB("libFileB.so", "0x20D3A8");
-
-    AddMoneyExample = (void (*)(void *, int)) getAbsoluteAddress(targetLibName, 0x123456);
-
-    LOGI(OBFUSCATE("Done"));
-#endif
-
-    //Anti-leech
-    /*if (!iconValid || !initValid || !settingsValid) {
-        //Bad function to make it crash
-        sleep(5);
-        int *p = 0;
-        *p = 0;
-    }*/
-
-    return NULL;
-}
+struct MemPatches {
+    // let's assume we have patches for these functions for whatever game
+    // boolean get_canShoot() function
+    MemoryPatch noDeath;
+    // etc...
+} gPatches;
 
 // Do not change or translate the first text unless you know what you are doing
 // Assigning feature numbers is optional. Without it, it will automatically count for you, starting from 0
@@ -145,7 +38,11 @@ jobjectArray GetFeatureList(JNIEnv *env, jobject context) {
     jobjectArray ret;
 
     const char *features[] = {
-            OBFUSCATE("Category_The Category"), //Not counted
+            OBFUSCATE("Toggle_No death"),
+            OBFUSCATE("Button_Start Invcibility (30 sec duration)"),
+            OBFUSCATE("SeekBar_Score multiplier_1_100"),
+            OBFUSCATE("SeekBar_Coins multiplier_1_1000"),
+            OBFUSCATE("Category_Examples"), //Not counted
             OBFUSCATE("Toggle_The toggle"),
             OBFUSCATE(
                     "100_Toggle_True_The toggle 2"), //This one have feature number assigned, and switched on by default
@@ -159,6 +56,8 @@ jobjectArray GetFeatureList(JNIEnv *env, jobject context) {
             OBFUSCATE("CheckBox_The Check Box"),
             OBFUSCATE("InputValue_Input number"),
             OBFUSCATE("InputValue_1000_Input number 2"), //Max value
+			OBFUSCATE("1111_InputLValue_Input long number"),
+            OBFUSCATE("InputLValue_1000000000000_Input long number 2"), //Max value
             OBFUSCATE("InputText_Input text"),
             OBFUSCATE("RadioButton_Radio buttons_OFF,Mod 1,Mod 2,Mod 3"),
 
@@ -186,7 +85,6 @@ jobjectArray GetFeatureList(JNIEnv *env, jobject context) {
                       "</body></html>")
     };
 
-    //Now you dont have to manually update the number everytime;
     int Total_Feature = (sizeof features / sizeof features[0]);
     ret = (jobjectArray)
             env->NewObjectArray(Total_Feature, env->FindClass(OBFUSCATE("java/lang/String")),
@@ -198,91 +96,106 @@ jobjectArray GetFeatureList(JNIEnv *env, jobject context) {
     return (ret);
 }
 
-void Changes(JNIEnv *env, jclass clazz, jobject obj,
-                                        jint featNum, jstring featName, jint value,
-                                        jboolean boolean, jstring str) {
+bool btnPressed = false;
 
-    LOGD(OBFUSCATE("Feature name: %d - %s | Value: = %d | Bool: = %d | Text: = %s"), featNum,
-         env->GetStringUTFChars(featName, 0), value,
-         boolean, str != NULL ? env->GetStringUTFChars(str, 0) : "");
-
-    //BE CAREFUL NOT TO ACCIDENTLY REMOVE break;
+void Changes(JNIEnv *env, jclass clazz, jobject obj, jint featNum, jstring featName, jint value, jlong Lvalue, jboolean boolean, jstring text) {
 
     switch (featNum) {
         case 0:
-            // A much simpler way to patch hex via KittyMemory without need to specify the struct and len. Spaces or without spaces are fine
-            // ARMv7 assembly example
-            // MOV R0, #0x0 = 00 00 A0 E3
-            // BX LR = 1E FF 2F E1
-            PATCH_LIB_SWITCH("libil2cpp.so", "0x100000", "00 00 A0 E3 1E FF 2F E1", boolean);
+        {
+            if (boolean)
+                gPatches.noDeath.Modify();
+            else
+                gPatches.noDeath.Restore();
             break;
-        case 100:
-            //Reminder that the strings are auto obfuscated
-            //Switchable patch
-            PATCH_SWITCH("0x400000", "00 00 A0 E3 1E FF 2F E1", boolean);
-            PATCH_LIB_SWITCH("libil2cpp.so", "0x200000", "00 00 A0 E3 1E FF 2F E1", boolean);
-            PATCH_SYM_SWITCH("_SymbolExample", "00 00 A0 E3 1E FF 2F E1", boolean);
-            PATCH_LIB_SYM_SWITCH("libNativeGame.so", "_SymbolExample", "00 00 A0 E3 1E FF 2F E1", boolean);
-
-            //Restore patched offset to original
-            RESTORE("0x400000");
-            RESTORE_LIB("libil2cpp.so", "0x400000");
-            RESTORE_SYM("_SymbolExample");
-            RESTORE_LIB_SYM("libil2cpp.so", "_SymbolExample");
-            break;
-        case 110:
-            break;
+        }
         case 1:
-            if (value >= 1) {
-                sliderValue = value;
-            }
+            btnPressed = true;
             break;
         case 2:
-            switch (value) {
-                //For noobies
-                case 0:
-                    RESTORE("0x0");
-                    break;
-                case 1:
-                    PATCH("0x0", "01 00 A0 E3 1E FF 2F E1");
-                    break;
-                case 2:
-                    PATCH("0x0", "02 00 A0 E3 1E FF 2F E1");
-                    break;
-            }
+            scoreMul = value;
             break;
         case 3:
-            switch (value) {
-                case 0:
-                    LOGD(OBFUSCATE("Selected item 1"));
-                    break;
-                case 1:
-                    LOGD(OBFUSCATE("Selected item 2"));
-                    break;
-                case 2:
-                    LOGD(OBFUSCATE("Selected item 3"));
-                    break;
-            }
-            break;
-        case 4:
-            // Since we have instanceBtn as a field, we can call it out of Update hook function
-            if (instanceBtn != NULL)
-                AddMoneyExample(instanceBtn, 999999);
-            // MakeToast(env, obj, OBFUSCATE("Button pressed"), Toast::LENGTH_SHORT);
-            break;
-        case 5:
-            break;
-        case 6:
-            featureHookToggle = boolean;
-            break;
-        case 7:
-            level = value;
-            break;
-        case 8:
-            break;
-        case 9:
+            coinsMul = value;
             break;
     }
+}
+
+//CharacterPlayer
+void (*StartInvcibility)(void *instance, float duration);
+
+void (*old_Update)(void *instance);
+
+void Update(void *instance) {
+    if (instance != nullptr) {
+        if (btnPressed) {
+            StartInvcibility(instance, 30);
+            btnPressed = false;
+        }
+    }
+    return old_Update(instance);
+}
+
+void (*old_AddScore)(void *instance, int score);
+void AddScore(void *instance, int score) {
+    return old_AddScore(instance, score * scoreMul);
+}
+
+void (*old_AddCoins)(void *instance, int count);
+void AddCoins(void *instance, int count) {
+    return old_AddCoins(instance, count * coinsMul);
+}
+
+//Target lib here
+#define targetLibName OBFUSCATE("libil2cpp.so")
+
+ElfScanner g_il2cppELF;
+
+// we will run our hacks in a new thread so our while loop doesn't block process main thread
+void *hack_thread(void *) {
+    LOGI(OBFUSCATE("pthread created"));
+
+    //Check if target lib is loaded
+    /*do {
+        sleep(1);
+    } while (!isLibraryLoaded(targetLibName));*/
+
+    do {
+        sleep(1);
+        // getElfBaseMap can also find lib base even if it was loaded from zipped base.apk
+        g_il2cppELF = ElfScanner::createWithPath(targetLibName);
+    } while (!g_il2cppELF.isValid());
+
+    LOGI(OBFUSCATE("%s has been loaded"), (const char *) targetLibName);
+
+#if defined(__aarch64__)
+    uintptr_t il2cppBase = g_il2cppELF.base();
+
+    //Il2Cpp: Use RVA offset
+    StartInvcibility = (void (*)(void *, float)) getAbsoluteAddress(targetLibName, str2Offset(
+            OBFUSCATE("0x107A3BC")));
+
+    HOOK(targetLibName, str2Offset(OBFUSCATE("0x107A2E0")), AddScore, old_AddScore);
+    HOOK(targetLibName, str2Offset(OBFUSCATE("0x107A2FC")), AddCoins, old_AddCoins);
+    HOOK(targetLibName, str2Offset(OBFUSCATE("0x1078C44")), Update, old_Update);
+
+    gPatches.noDeath = MemoryPatch::createWithHex(il2cppBase + str2Offset(OBFUSCATE("0x1079728")), "C0 03 5F D6");
+
+    //HOOK(targetLibName, str2Offset(OBFUSCATE("0x1079728")), Kill, old_Kill);
+
+    //PATCH(targetLibName, str2Offset("0x10709AC"), "E05F40B2 C0035FD6");
+    //HOOK(OBFUSCATE("libFileB.so"), str2Offset(OBFUSCATE("0x123456")), FunctionExample, old_FunctionExample);
+    //HOOK("libFileB.so", 4646464, FunctionExample, old_FunctionExample);
+    //HOOK_NO_ORIG("libFileC.so", str2Offset("0x123456"), FunctionExample);
+    //HOOKSYM("libFileB.so", "__SymbolNameExample", FunctionExample, old_FunctionExample);
+    //HOOKSYM_NO_ORIG("libFileB.so", "__SymbolNameExample", FunctionExample);
+
+#elif defined(__arm__)
+    //Put your code here if you want the code to be compiled for armv7 only
+#endif
+
+    LOGI(OBFUSCATE("Done"));
+    return nullptr;
 }
 
 __attribute__((constructor))
@@ -290,61 +203,4 @@ void lib_main() {
     // Create a new thread so it does not block the main thread, means the game would not freeze
     pthread_t ptid;
     pthread_create(&ptid, NULL, hack_thread, NULL);
-}
-
-int RegisterMenu(JNIEnv *env) {
-    JNINativeMethod methods[] = {
-            {OBFUSCATE("Icon"), OBFUSCATE("()Ljava/lang/String;"), reinterpret_cast<void *>(Icon)},
-            {OBFUSCATE("IconWebViewData"),  OBFUSCATE("()Ljava/lang/String;"), reinterpret_cast<void *>(IconWebViewData)},
-            {OBFUSCATE("IsGameLibLoaded"),  OBFUSCATE("()Z"), reinterpret_cast<void *>(isGameLibLoaded)},
-            {OBFUSCATE("Init"),  OBFUSCATE("(Landroid/content/Context;Landroid/widget/TextView;Landroid/widget/TextView;)V"), reinterpret_cast<void *>(Init)},
-            {OBFUSCATE("SettingsList"),  OBFUSCATE("()[Ljava/lang/String;"), reinterpret_cast<void *>(SettingsList)},
-            {OBFUSCATE("GetFeatureList"),  OBFUSCATE("()[Ljava/lang/String;"), reinterpret_cast<void *>(GetFeatureList)},
-    };
-
-    jclass clazz = env->FindClass(OBFUSCATE("com/android/support/Menu"));
-    if (!clazz)
-        return JNI_ERR;
-    if (env->RegisterNatives(clazz, methods, sizeof(methods) / sizeof(methods[0])) != 0)
-        return JNI_ERR;
-    return JNI_OK;
-}
-
-int RegisterPreferences(JNIEnv *env) {
-    JNINativeMethod methods[] = {
-            {OBFUSCATE("Changes"), OBFUSCATE("(Landroid/content/Context;ILjava/lang/String;IZLjava/lang/String;)V"), reinterpret_cast<void *>(Changes)},
-    };
-    jclass clazz = env->FindClass(OBFUSCATE("com/android/support/Preferences"));
-    if (!clazz)
-        return JNI_ERR;
-    if (env->RegisterNatives(clazz, methods, sizeof(methods) / sizeof(methods[0])) != 0)
-        return JNI_ERR;
-    return JNI_OK;
-}
-
-int RegisterMain(JNIEnv *env) {
-    JNINativeMethod methods[] = {
-            {OBFUSCATE("CheckOverlayPermission"), OBFUSCATE("(Landroid/content/Context;)V"), reinterpret_cast<void *>(CheckOverlayPermission)},
-    };
-    jclass clazz = env->FindClass(OBFUSCATE("com/android/support/Main"));
-    if (!clazz)
-        return JNI_ERR;
-    if (env->RegisterNatives(clazz, methods, sizeof(methods) / sizeof(methods[0])) != 0)
-        return JNI_ERR;
-
-    return JNI_OK;
-}
-
-extern "C"
-JNIEXPORT jint JNICALL
-JNI_OnLoad(JavaVM *vm, void *reserved) {
-    JNIEnv *env;
-    vm->GetEnv((void **) &env, JNI_VERSION_1_6);
-    if (RegisterMenu(env) != 0)
-        return JNI_ERR;
-    if (RegisterPreferences(env) != 0)
-        return JNI_ERR;
-    if (RegisterMain(env) != 0)
-        return JNI_ERR;
-    return JNI_VERSION_1_6;
 }

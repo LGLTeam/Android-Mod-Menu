@@ -9,6 +9,7 @@
 
 #include <jni.h>
 #include <android/log.h>
+#include "obfuscate.h"
 
 enum LogType {
     oDEBUG = 3,
