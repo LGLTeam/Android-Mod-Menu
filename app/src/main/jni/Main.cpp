@@ -7,20 +7,18 @@
 #include <unistd.h>
 #include <fstream>
 #include <iostream>
+#include <dlfcn.h>
 #include "Includes/Logger.h"
 #include "Includes/obfuscate.h"
 #include "Includes/Utils.h"
+
 #include "KittyMemory/MemoryPatch.h"
 #include "Menu.h"
 
-#if defined(__aarch64__) //Compile for arm64 lib only
-#include <And64InlineHook/And64InlineHook.hpp>
-#else //Compile for armv7 lib only. Do not worry about greyed out highlighting code, it still works
+//Target lib here
+#define targetLibName OBFUSCATE("libFileA.so")
 
-#include <Substrate/SubstrateHook.h>
-#include <Substrate/CydiaSubstrate.h>
-
-#endif
+#include "Includes/Macros.h"
 
 // fancy struct for patches for kittyMemory
 struct My_Patches {
@@ -34,18 +32,9 @@ bool feature1, feature2, featureHookToggle, Health;
 int sliderValue = 1, level = 0;
 void *instanceBtn;
 
-// Function pointer splitted because we want to avoid crash when the il2cpp lib isn't loaded.
-// If you putted getAbsoluteAddress here, the lib tries to read the address without il2cpp loaded,
-// will result in a null pointer which will cause crash
-// See https://guidedhacking.com/threads/android-function-pointers-hooking-template-tutorial.14771/
+// Hooking examples. Assuming you know how to write hook
 void (*AddMoneyExample)(void *instance, int amount);
 
-//KittyMemory Android Example: https://github.com/MJx0/KittyMemory/blob/master/Android/test/src/main.cpp
-//Use ARM Converter to convert ARM to HEX: https://armconverter.com/
-
-// Hooking examples. Please refer to online tutorials how to write C++ and hooking. Here's a few below
-// https://platinmods.com/threads/basic-hooking-tutorial.115704/
-// https://platinmods.com/threads/how-to-unlink-functions-in-il2cpp-and-other-native-games.130436/
 bool (*old_get_BoolExample)(void *instance);
 bool get_BoolExample(void *instance) {
     if (instance != NULL && featureHookToggle) {
@@ -70,25 +59,16 @@ int Level(void *instance) {
     return old_Level(instance);
 }
 
-void (*old_Update)(void *instance);
-void Update(void *instance) {
+void (*old_FunctionExample)(void *instance);
+void FunctionExample(void *instance) {
     instanceBtn = instance;
-    return old_Update(instance);
-}
-
-//Field offset hooking
-void (*old_HealthUpdate)(void *instance);
-void HealthUpdate(void *instance) {
     if (instance != NULL) {
         if (Health) {
             *(int *) ((uint64_t) instance + 0x48) = 999;
         }
     }
-    return old_HealthUpdate(instance);
+    return old_FunctionExample(instance);
 }
-
-//Target lib here
-#define targetLibName OBFUSCATE("libil2cpp.so")
 
 // we will run our hacks in a new thread so our while loop doesn't block process main thread
 void *hack_thread(void *) {
@@ -120,16 +100,24 @@ void *hack_thread(void *) {
                                                      string2Offset(OBFUSCATE("0x222222")),
                                                      OBFUSCATE("20 00 80 D2 C0 03 5F D6"));
 
-    // Offset Hook example
-    //A64HookFunction((void *) getAbsoluteAddress(targetLibName, string2Offset(OBFUSCATE_KEY("0x123456", 23479432523588))), (void *) get_BoolExample,
-    //                (void **) &old_get_BoolExample);
+    // Hook example. Comment out if you don't use hook
+    // Strings in macros are automatically obfuscated. No need to obfuscate!
+    HOOK("str", FunctionExample, old_FunctionExample);
+    HOOK_LIB("libFileB.so", "0x123456", FunctionExample, old_FunctionExample);
+    HOOK_NO_ORIG("0x123456", FunctionExample);
+    HOOK_LIB_NO_ORIG("libFileC.so", "0x123456", FunctionExample);
+    HOOKSYM("__SymbolNameExample", FunctionExample, old_FunctionExample);
+    HOOKSYM_LIB("libFileB.so", "__SymbolNameExample", FunctionExample, old_FunctionExample);
+    HOOKSYM_NO_ORIG("__SymbolNameExample", FunctionExample);
+    HOOKSYM_LIB_NO_ORIG("libFileB.so", "__SymbolNameExample", FunctionExample);
 
-    // Function pointer splitted because we want to avoid crash when the il2cpp lib isn't loaded.
-    // See https://guidedhacking.com/threads/android-function-pointers-hooking-template-tutorial.14771/
+    // Patching offsets directly. Strings are automatically obfuscated too!
+    PATCHOFFSET("0x20D3A8", "00 00 A0 E3 1E FF 2F E1");
+    PATCHOFFSET_LIB("libFileB.so", "0x20D3A8", "00 00 A0 E3 1E FF 2F E1");
+
     AddMoneyExample = (void(*)(void *,int))getAbsoluteAddress(targetLibName, 0x123456);
 
 #else //To compile this code for armv7 lib only.
-
     // New way to patch hex via KittyMemory without need to specify len. Spaces or without spaces are fine
     // ARMv7 assembly example
     // MOV R0, #0x0 = 00 00 A0 E3
@@ -139,25 +127,24 @@ void *hack_thread(void *) {
                                                     OBFUSCATE("00 00 A0 E3 1E FF 2F E1"));
     //You can also specify target lib like this
     hexPatches.GodMode2 = MemoryPatch::createWithHex("libtargetLibHere.so",
-                                                     string2Offset(OBFUSCATE_KEY("0x222222", 23479432523588)), //64-bit key in decimal
-                                                     OBFUSCATE_KEY("01 00 A0 E3 1E FF 2F E1", 0x3FE63DF21A3B)); //64-bit key in hex works too
-    //Can apply patches directly here without need to use switch
-    //hexPatches.GodMode.Modify();
-    //hexPatches.GodMode2.Modify();
+                                                     string2Offset(OBFUSCATE("0x222222")),
+                                                     OBFUSCATE("01 00 A0 E3 1E FF 2F E1"));
 
-    // Offset Hook example
-    //MSHookFunction((void *) getAbsoluteAddress(targetLibName,
-    //               string2Offset(OBFUSCATE_KEY("0x123456", '?'))),
-    //               (void *) get_BoolExample, (void **) &old_get_BoolExample);
-    // MSHookFunction((void *) getAbsoluteAddress(targetLibName,
-    //               string2Offset(OBFUSCATE_KEY("0x123456", '?'))),
-    //               (void *) Level, (void **) &old_Level);
+    // Hook example. Comment out if you don't use hook
+    // Strings in macros are automatically obfuscated. No need to obfuscate!
+    HOOK("str", FunctionExample, old_FunctionExample);
+    HOOK_LIB("libFileB.so", "0x123456", FunctionExample, old_FunctionExample);
+    HOOK_NO_ORIG("0x123456", FunctionExample);
+    HOOK_LIB_NO_ORIG("libFileC.so", "0x123456", FunctionExample);
+    HOOKSYM("__SymbolNameExample", FunctionExample, old_FunctionExample);
+    HOOKSYM_LIB("libFileB.so", "__SymbolNameExample", FunctionExample, old_FunctionExample);
+    HOOKSYM_NO_ORIG("__SymbolNameExample", FunctionExample);
+    HOOKSYM_LIB_NO_ORIG("libFileB.so", "__SymbolNameExample", FunctionExample);
 
-    // Symbol hook example (untested). Symbol/function names can be found in IDA if the lib are not stripped. This is not for il2cpp games
-    //MSHookFunction((void *) ("__SymbolNameExample"), (void *) get_BoolExample, (void **) &old_get_BoolExample);
+    // Patching offsets directly. Strings are automatically obfuscated too!
+    PATCHOFFSET("0x20D3A8", "00 00 A0 E3 1E FF 2F E1");
+    PATCHOFFSET_LIB("libFileB.so", "0x20D3A8", "00 00 A0 E3 1E FF 2F E1");
 
-    // Function pointer splitted because we want to avoid crash when the il2cpp lib isn't loaded.
-    // See https://guidedhacking.com/threads/android-function-pointers-hooking-template-tutorial.14771/
     AddMoneyExample = (void (*)(void *, int)) getAbsoluteAddress(targetLibName, 0x123456);
 
     LOGI(OBFUSCATE("Done"));
@@ -187,7 +174,8 @@ Java_uk_lgl_modmenu_FloatingModMenuService_getFeatureList(JNIEnv *env, jobject c
     const char *features[] = {
             OBFUSCATE("Category_The Category"), //Not counted
             OBFUSCATE("Toggle_The toggle"),
-            OBFUSCATE("100_Toggle_True_The toggle 2"), //This one have feature number assigned, and switched on by default
+            OBFUSCATE(
+                    "100_Toggle_True_The toggle 2"), //This one have feature number assigned, and switched on by default
             OBFUSCATE("110_Toggle_The toggle 3"), //This one too
             OBFUSCATE("SeekBar_The slider_1_100"),
             OBFUSCATE("SeekBar_Kittymemory slider example_1_5"),

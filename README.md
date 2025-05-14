@@ -1,19 +1,21 @@
-**WARNING: THIS TEMPLATE IS NOT FOR BEGINNERS. YOU NEED THE PROGRAMMING KNOWLEDGE, OTHERWISE THIS TEMPLATE WILL BE TOO HARD FOR YOU**
+**WARNING: THIS TEMPLATE IS NOT FOR NEWBIES, THIS IS FOR EXPERIENCES PROGRAMMERS ONLY. NEWBIES SHOULD NOT PROCEED TO TRY IT**
 
 **This won't cover how to mod games in general, hooking functions, etc that every other online tutorial already covers. This template simply tells you how to use them**
 
 **For Android mobile users who don't have a PC, please read [README-MOBILE.md](https://github.com/LGLTeam/Android-Mod-Menu/blob/master/README-MOBILE.md)**
 
-# Quick links
+# KNOWN BUG
+- Spinner does not show on Android 11
+
+# Table of contents
 - [Prerequisites](https://github.com/LGLTeam/Android-Mod-Menu/blob/master/README.md#prerequisites)
 - [What you need](#what-you-need)
-- [Download/clone](#downloadclone)
 - [Video Tutorial](#video-tutorial)
-- [Setting up](#setting-up)
+- [Installation](#installation)
 - [Files to work with and making changes](#files-to-work-with-and-making-changes)
-- [Anti-leech measures](#anti-leech-measures)
 - [Implementing the menu to the target game](#implementing-the-menu-to-the-target-game)
 - [Loading lib without mod menu](#loading-lib-without-mod-menu)
+- [Leeching concerns](#leeching-concerns)
 - [FAQ](#faq)
 - [Reporting issues/Cоntact](reporting-issuescоntact)
 - [Credits/Acknowledgements](#creditsacknowledgements)
@@ -50,30 +52,21 @@ Before we can jump head first into working a template, we need to go over a few 
 * Any base64 encoding to encode your file: We use https://www.base64encode.org/
 * ARM converter, to convert ARM instruction to hex: https://armconverter.com/
 
-# Download/Clone
-Download this repo as ZIP, or clone using any git tools
-
-Or download Releases here https://github.com/LGLTeam/Android-Mod-Menu/releases
-
-Extract the source to your desired location. The location must **NOT** contain any spaces or symbols
-
 # Video Tutorial
-
 Big thanks to modders who created a video tutorial for me. Be warned, those videos might be outdated
 
 PMT DVA: https://www.youtube.com/watch?v=ieMclBtL6Ig
 
 Pasha Production: https://www.youtube.com/watch?v=RvrZKIe-QGc
 
-# Setting up
+# Installation
+Download this repo as ZIP, or clone using any git tools
 
-Make sure you have everything you need to prepare to work.
+Or download Releases here https://github.com/LGLTeam/Android-Mod-Menu/releases
 
-Extract the project to the location **WITHOUT** spaces and weird symbols. Spaces and symbols can cause problems
+Extract the source to your desired location. The location must **NOT** contain any spaces or symbols
 
 Open the project
-
-![](https://i.imgur.com/3etm4qX.png)
 
 Please wait for a while, it will index and sync the project for the first time, takes around a minute depending your computer performance
 
@@ -244,7 +237,7 @@ CollapseAdd_Toggle_The toggle
 CollapseAdd_Button_The button
 ```
 
-#### KittyMemory usage:
+#### KittyMemory patching usage:
 ```cpp
 MemoryPatch::createWithHex([Lib Name], [offset], "[hex. With or without spaces]");
 [Struct].get_CurrBytes().Modify();
@@ -253,13 +246,32 @@ MemoryPatch::createWithHex([Lib Name], [offset], "[hex. With or without spaces]"
 [Struct].get_TargetAddress();
 [Struct].get_PatchSize();
 [Struct].get_CurrBytes().c_str();
+
+PATCHOFFSET("0x20D3A8", "00 00 A0 E3 1E FF 2F E1");
+PATCHOFFSET_LIB("libFileB.so", "0x20D3A8", "00 00 A0 E3 1E FF 2F E1");
 ```
 
 Example: https://github.com/MJx0/KittyMemory/blob/master/Android/test/src/main.cpp
 
-Use ARM Converter to convert ARM to HEX: https://armconverter.com/
+Use an online ARM assembly converter like ARMConverter to convert ARM to HEX: https://armconverter.com/
 
 #### Hook usage:
+This macro works for both ARMv7 and ARM64. Make sure to use predefined macro `defined(__aarch64__)` and `defined(__arm__)` if you are targeting both archs
+
+Strings for macros are automatically obfuscated. No need to obfuscate!
+```cpp
+HOOK("0x123456", FunctionExample, old_FunctionExample);
+HOOK_LIB("libFileB.so", "0x123456", FunctionExample, old_FunctionExample);
+HOOK_NO_ORIG("0x123456", FunctionExample);
+HOOK_LIB_NO_ORIG("libFileC.so", "0x123456", FunctionExample);
+HOOKSYM("__SymbolNameExample", FunctionExample, old_FunctionExample);
+HOOKSYM_LIB("libFileB.so", "__SymbolNameExample", FunctionExample, old_FunctionExample);
+HOOKSYM_NO_ORIG("__SymbolNameExample", FunctionExample);
+HOOKSYM_LIB_NO_ORIG("libFileB.so", "__SymbolNameExample", FunctionExample);
+```
+
+Or
+
 ARM64:
 ```cpp
 A64HookFunction((void *) getAbsoluteAddress([Lib Name], [offset]), (void *)[function], (void **)&[old function]);
@@ -275,30 +287,6 @@ MSHookFunction((void *) getAbsoluteAddress([Lib Name], [offset]), (void *)[funct
 The make file for the c++ compiler. In that file, you can change the lib name on the `LOCAL_MODULE` line
 When you change the lib name, change also on `System.loadLibrary("")` under OnCreate method on `MainActivity.java`
 Both must have same name
-
-# Anti-leech measures
-
-Leeching as known as stealing code and offsets via reverse enginnering. We are aware that some leechers like to change credit, steal offsets, etc
-
-We implemented some basic protections:
-- C++ string obfuscation: AY Obfuscator. Usage `OBFUSCATE("string here")` and with a key `OBFUSCATE_KEY("string here", 64-bit key here)`. Example `OBFUSCATE_KEY("Hello", 2353474243)` or in hex `OBFUSCATE_KEY("Hello", 0x3FE63DF21A3B)`. The key must not be too long or too short
-- `string2Offset("")` to protect offsets
-- Crash if JNI functions are not called
-- Quite harder to edit credits via smali
-- Toast hidden inside `getFeatureList` in Main.cpp
-
-However, this does not stop pro leechers, nothing is impossible. We recommended that you:
-- Improve anti-leech measures on your own way
-- Remove ALL LOGs
-- Protect and encrypt your dex and lib. Find the tools or the projects by yourself, chinese based tools is not recommended as anti virus may flag your mod for malware (false positive). Don't tell anyone what protection you are using, don't let game developers get a hand of it
-- Use other C++ string obfuscators
-- Enable proguard, and add filters to make sure it does not break your project. See https://developer.android.com/studio/build/shrink-code
-- Change the package name of this project
-- Never give out your project to someone unless you really trust them
-- Never tell anyone about your way to protect, not to LGL Team either
-- And many more
-
-Do not contact us anything about it, we will not help with it! Don't complain that your mod has been leeched, that's your responsibility! Showing us how to leech will get you instant blocked!
 
 # Testing
 
@@ -448,6 +436,30 @@ Congrats. You have successfully implemented a mod menu.
 Compile failed? read the log and look up on Google
 
 If you face any problem, please read the [FAQ](#faq)
+
+# Leeching concerns
+
+Leeching as known as stealing code and offsets via reverse enginnering, and editing credits via file editing and recompiling. We all know that, right?
+
+There are some simple protections in the template:
+- Simple C++ string obfuscation called AY Obfuscator. Usage `OBFUSCATE("string here")` and with a key `OBFUSCATE_KEY("string here", 64-bit key here)`. Example `OBFUSCATE_KEY("Hello", 2353474243)` or in hex `OBFUSCATE_KEY("Hello", 0x3FE63DF21A3B)`. The key must not be too long or too short
+- `string2Offset("")` to protect offsets
+- Simple anti-leech measures that crashes if JNI functions are not called
+- Quite harder to edit credits via smali
+- Toast hidden inside `getFeatureList` in Main.cpp
+
+These protection are NOT full protection, it does not stop them, it will only slow them down, this intent is to help you improve on your own by yourself. You should:
+- Improve anti-leech measures on your own way
+- Protect and encrypt your dex and lib. Find the tools or the projects by yourself, chinese based tools is not recommended as anti virus may flag your mod for malware (false positive). Don't tell anyone what protection you are using, don't let game developers get a hand of it
+- Improve string obfuscators a lot more or use others which are not known. Make sure that obfuscator is not too simple
+- Enable proguard, and add filters to make sure it does not break your project. See https://developer.android.com/studio/build/shrink-code
+- Never share your project to someone
+- Do not include any important stuff such as 'offline' username and password, instead add an additional layer, e.g. a web service handling the protected request
+- And etc.
+
+Never contact how to protect more, never complain that your mod has been leeched, that's all your responsibility! If you are really worry about leeching, or getting constantly leeched, and can't protect, just upload your project on Github. They will download from your Github instead leeching.
+
+**Never tell us how to leech stuff, we are not interested getting involved in it, You will get blocked immediately!**
 
 # FAQ
 ### My game crashing or freezing/My mod menu does not work

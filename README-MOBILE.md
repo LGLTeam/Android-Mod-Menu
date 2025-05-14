@@ -3,10 +3,10 @@
 **BEST VIEWED ON MOBILE!**
 
 # Quick links
-- [Prerequisites](#prerequisites)
+- [Prerequisites](https://github.com/LGLTeam/Android-Mod-Menu/blob/master/README.md#prerequisites)
 - [What you need](#what-you-need)
 - [Video Tutorial](#video-tutorial)
-- [Download/clone](#downloadclone)
+- [Installation](#installation)
 - [Setting up AIDE](#setting-up-aide)
 - [Files to work with and making changes](#files-to-work-with-and-making-changes)
 - [Implementing the menu to the target game](#implementing-the-menu-to-the-target-game)
@@ -15,10 +15,15 @@
 - [Credits/Acknowledgements](#creditsacknowledgements)
 
 # What you need
-* [Modded AIDE app](https://secufiles.com/nE9J/AIDE_CMODs_3.2.200108.apk): The official AIDE from Play Store will not work with this project
-* [ndk.tar.gz](https://mega.nz/folder/2c1TWIJD#UCzO7kIo1e4WpFwZHIMYVw): NDK support for modded AIDE. ndk_arm.tar.gz for 32-bit/ARMv7 phones, ndk_arm64.tar.gz for 64-bit/ARM64 phones
-* [X-plore](https://play.google.com/store/apps/details?id=com.lonelycatgames.Xplore&hl=en): File Manager
-* [MT Manager](https://bbs.binmt.cc/forum-2-1.html) [(Mirror link)](https://secufiles.com/js6i/MT2.9.2.apk) With build-in Apktool and editors to modify APK file. Note: It requires VIP to edit `AndroidManifest.xml` more than 200 lines
+* Modded AIDE app, choose one of them you like to use. The official AIDE from Play Store will not work with this project
+    * [AIDE CMODs](https://secufiles.com/nE9J/AIDE_CMODs_3.2.200108.apk)
+	* [AIDE Lite Mod](https://mega.nz/file/bIpCQL6I#BzyLf1pB1Sf7EayW_PEJHl3f50qHHZDdb0BpB8FYdVo)
+* NDK support for modded AIDE
+    * NDK for 32-bit/ARMv7 phones: [ndk_arm.tar.gz](https://mega.nz/folder/2c1TWIJD#UCzO7kIo1e4WpFwZHIMYVw/file/XRlRTIjJ)
+    * NDK for 64-bit/ARM64 phones: [ndk_arm64.tar.gz](https://mega.nz/folder/2c1TWIJD#UCzO7kIo1e4WpFwZHIMYVw/file/7RdTzYxQ)
+* Any File Manager app you like to use but these are recommended
+    * [X-plore](https://play.google.com/store/apps/details?id=com.lonelycatgames.Xplore&hl=en): 
+    * [MT Manager](https://bbs.binmt.cc/forum-2-1.html) [(Mirror link)](https://secufiles.com/js6i/MT2.9.2.apk) With build-in Apktool and editors to modify APK file. Note: It requires VIP to edit `AndroidManifest.xml` more than 200 lines
 * Apktool app to edit `AndroidManifest.xml` for free: [Modded APK Editor Pro app](https://mega.nz/file/zQxA0YDY#eNRgcyrHwpWh1nSTHhcc4quxzeXrXcUHlYPoRyltKEw) or [APK Repacker](https://mega.nz/file/LIom0DDL#hJyIchPDCk2n_gcDmutNsOKS86WXQN58qpEGa9JsLrU) (We use APK Editor Pro)
 * [Floating apps](https://play.google.com/store/apps/details?id=com.lwi.android.flappsfull&hl=en) (optional): You can use it to read this page and working at the same time or use a build-in feature by OEM
 
@@ -31,7 +36,7 @@ NSRAÎNA HACKER: https://www.youtube.com/watch?v=MkkZ_loEDTU
 
 BROKE MODS OFC (Customized menu): https://www.youtube.com/watch?v=IYREVGc-quM
 
-# Download/Clone
+# Installation
 
 Go to releases page https://github.com/LGLTeam/Android-Mod-Menu/releases/ and download **Source code (zip)**
 

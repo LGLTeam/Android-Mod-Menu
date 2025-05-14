@@ -66,6 +66,8 @@ import static android.widget.RelativeLayout.ALIGN_PARENT_RIGHT;
 
 public class FloatingModMenuService extends Service {
     //********** Here you can easly change the menu appearance **********//
+
+    //region Variable
     public static final String TAG = "Mod_Menu"; //Tag for logcat
     int TEXT_COLOR = Color.parseColor("#82CAFD");
     int TEXT_COLOR_2 = Color.parseColor("#FFFFFF");
@@ -75,7 +77,7 @@ public class FloatingModMenuService extends Service {
     int MENU_WIDTH = 290;
     int MENU_HEIGHT = 210;
     float MENU_CORNER = 4f;
-    int ICON_SIZE = 50; //Change both width and height of image
+    int ICON_SIZE = 45; //Change both width and height of image
     float ICON_ALPHA = 0.7f; //Transparent
     int ToggleON = Color.GREEN;
     int ToggleOFF = Color.RED;
@@ -113,6 +115,7 @@ public class FloatingModMenuService extends Service {
     native String[] settingsList();
 
     native boolean isGameLibLoaded();
+    //endregion
 
     //When this Class is called the code in this function will be executed
     @Override
@@ -683,18 +686,17 @@ public class FloatingModMenuService extends Service {
         // Create another LinearLayout as a workaround to use it as a background
         // to keep the down arrow symbol. No arrow symbol if setBackgroundColor set
         LinearLayout linearLayout2 = new LinearLayout(this);
-        LinearLayout.LayoutParams layoutParams2 = new LinearLayout.LayoutParams(MATCH_PARENT, MATCH_PARENT);
-        layoutParams2.setMargins(10, 2, 10, 5);
+        LinearLayout.LayoutParams layoutParams2 = new LinearLayout.LayoutParams(MATCH_PARENT, WRAP_CONTENT);
+        layoutParams2.setMargins(7, 2, 7, 5);
         linearLayout2.setOrientation(LinearLayout.VERTICAL);
         linearLayout2.setBackgroundColor(BTN_COLOR);
         linearLayout2.setLayoutParams(layoutParams2);
 
         final Spinner spinner = new Spinner(this, Spinner.MODE_DROPDOWN);
-        spinner.setPadding(5, 10, 5, 8);
         spinner.setLayoutParams(layoutParams2);
         spinner.getBackground().setColorFilter(1, PorterDuff.Mode.SRC_ATOP); //trick to show white down arrow color
         //Creating the ArrayAdapter instance having the list
-        ArrayAdapter aa = new ArrayAdapter(this, android.R.layout.simple_spinner_item, lists);
+        ArrayAdapter aa = new ArrayAdapter(this, android.R.layout.simple_spinner_dropdown_item, lists);
         aa.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         //Setting the ArrayAdapter data on the Spinner'
         spinner.setAdapter(aa);
@@ -714,7 +716,7 @@ public class FloatingModMenuService extends Service {
         return linearLayout2;
     }
 
-    private View TextField(final int feature, final String featName, final boolean numOnly, final int maxValue) {
+    private View TextField(final int featNum, final String featName, final boolean numOnly, final int maxValue) {
         final EditTextString edittextstring = new EditTextString();
         final EditTextNum edittextnum = new EditTextNum();
         LinearLayout linearLayout = new LinearLayout(this);
@@ -723,11 +725,11 @@ public class FloatingModMenuService extends Service {
 
         final Button button = new Button(this);
         if (numOnly) {
-            int num = Preferences.loadPrefInt(featName, feature);
+            int num = Preferences.loadPrefInt(featName, featNum);
             edittextnum.setNum((num == 0) ? 1 : num);
             button.setText(Html.fromHtml(featName + ": <font color='" + NumberTxtColor + "'>" + ((num == 0) ? 1 : num) + "</font>"));
         } else {
-            String string = Preferences.loadPrefString(featName, feature);
+            String string = Preferences.loadPrefString(featName, featNum);
             edittextstring.setString((string == "") ? "" : string);
             button.setText(Html.fromHtml(featName + ": <font color='" + NumberTxtColor + "'>" + string + "</font>"));
         }
@@ -807,15 +809,15 @@ public class FloatingModMenuService extends Service {
                                 num = 2147483640;
                             }
                             edittextnum.setNum(num);
-                            button.setText(Html.fromHtml(featName + ": <font color='#41c300'>" + num + "</font>"));
+                            button.setText(Html.fromHtml(featName + ": <font color='" + NumberTxtColor + "'>" + num + "</font>"));
                             alert.dismiss();
-                            Preferences.changeFeatureInt(featName, feature, num);
+                            Preferences.changeFeatureInt(featName, featNum, num);
                         } else {
                             String str = edittext.getText().toString();
                             edittextstring.setString(edittext.getText().toString());
-                            button.setText(Html.fromHtml(featName + ": <font color='#41c300'>" + str + "</font>"));
+                            button.setText(Html.fromHtml(featName + ": <font color='" + NumberTxtColor + "'>" + str + "</font>"));
                             alert.dismiss();
-                            Preferences.changeFeatureString(featName, feature, str);
+                            Preferences.changeFeatureString(featName, featNum, str);
                         }
                         edittext.setFocusable(false);
                     }

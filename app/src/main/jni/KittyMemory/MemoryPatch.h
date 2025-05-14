@@ -12,8 +12,6 @@
 using KittyMemory::Memory_Status;
 using KittyMemory::ProcMap;
 
-extern bool isLeeched;
-
 class MemoryPatch {
 private:
     uintptr_t _address;

@@ -59,10 +59,7 @@ Java_uk_lgl_modmenu_FloatingModMenuService_IconWebViewData(JNIEnv *env, jobject 
     //WebView support GIF animation. Upload your image or GIF on imgur.com or other sites
 
     // From internet (Requires android.permission.INTERNET)
-    // return env->NewStringUTF(OBFUSCATE_KEY("https://i.imgur.com/SujJ85j.gif", 'd'));
-
-    // From assets folder: (Requires android.permission.INTERNET)
-    // return env->NewStringUTF(OBFUSCATE_KEY("file:///android_asset/example.gif", 'r');
+    // return env->NewStringUTF(OBFUSCATE("https://i.imgur.com/SujJ85j.gif"));
 
     // Base64 html:
     // return env->NewStringUTF("data:image/png;base64, <encoded base64 here>");
