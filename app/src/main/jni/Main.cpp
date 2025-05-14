@@ -2,6 +2,7 @@
 #include <vector>
 #include <string.h>
 #include <pthread.h>
+#include <thread>
 #include <cstring>
 #include <jni.h>
 #include <unistd.h>
@@ -12,8 +13,7 @@
 #include "Includes/obfuscate.h"
 #include "Includes/Utils.h"
 #include "KittyMemory/MemoryPatch.h"
-
-#include "Menu/Register.h"
+#include "Menu/Setup.h"
 
 //Target lib here
 #define targetLibName OBFUSCATE("libFileA.so")
@@ -167,6 +167,7 @@ jobjectArray GetFeatureList(JNIEnv *env, jobject context) {
             OBFUSCATE("CollapseAdd_Toggle_The toggle"),
             OBFUSCATE("CollapseAdd_Toggle_The toggle"),
             OBFUSCATE("123_CollapseAdd_Toggle_The toggle"),
+            OBFUSCATE("122_CollapseAdd_CheckBox_Check box"),
             OBFUSCATE("CollapseAdd_Button_The button"),
 
             //Create new collapse again
@@ -284,8 +285,6 @@ void Changes(JNIEnv *env, jclass clazz, jobject obj,
     }
 }
 
-//No need to use JNI_OnLoad, since we don't use JNIEnv
-//We do this to hide OnLoad from disassembler
 __attribute__((constructor))
 void lib_main() {
     // Create a new thread so it does not block the main thread, means the game would not freeze
@@ -293,14 +292,8 @@ void lib_main() {
     pthread_create(&ptid, NULL, hack_thread, NULL);
 }
 
-extern "C"
-JNIEXPORT jint JNICALL
-JNI_OnLoad(JavaVM *vm, void *reserved) {
-    JNIEnv *env;
-
-    vm->GetEnv((void **) &env, JNI_VERSION_1_6);
-
-    static const JNINativeMethod menuMethods[] = {
+int RegisterMenu(JNIEnv *env) {
+    JNINativeMethod methods[] = {
             {OBFUSCATE("Icon"), OBFUSCATE("()Ljava/lang/String;"), reinterpret_cast<void *>(Icon)},
             {OBFUSCATE("IconWebViewData"),  OBFUSCATE("()Ljava/lang/String;"), reinterpret_cast<void *>(IconWebViewData)},
             {OBFUSCATE("IsGameLibLoaded"),  OBFUSCATE("()Z"), reinterpret_cast<void *>(isGameLibLoaded)},
@@ -309,23 +302,49 @@ JNI_OnLoad(JavaVM *vm, void *reserved) {
             {OBFUSCATE("GetFeatureList"),  OBFUSCATE("()[Ljava/lang/String;"), reinterpret_cast<void *>(GetFeatureList)},
     };
 
-    if (Register(env, "com/android/support/Menu", menuMethods, sizeof(menuMethods) / sizeof(JNINativeMethod)) != 0)
+    jclass clazz = env->FindClass(OBFUSCATE("com/android/support/Menu"));
+    if (!clazz)
         return JNI_ERR;
+    if (env->RegisterNatives(clazz, methods, sizeof(methods) / sizeof(methods[0])) != 0)
+        return JNI_ERR;
+    return JNI_OK;
+}
 
-    static const JNINativeMethod prefMethods[] = {
-            { OBFUSCATE("Changes"), OBFUSCATE("(Landroid/content/Context;ILjava/lang/String;IZLjava/lang/String;)V"), reinterpret_cast<void *>(Changes)},
+int RegisterPreferences(JNIEnv *env) {
+    JNINativeMethod methods[] = {
+            {OBFUSCATE("Changes"), OBFUSCATE("(Landroid/content/Context;ILjava/lang/String;IZLjava/lang/String;)V"), reinterpret_cast<void *>(Changes)},
     };
-
-    if (Register(env, "com/android/support/Preferences",
-                 prefMethods, sizeof(prefMethods) / sizeof(JNINativeMethod)) != 0)
+    jclass clazz = env->FindClass(OBFUSCATE("com/android/support/Preferences"));
+    if (!clazz)
         return JNI_ERR;
+    if (env->RegisterNatives(clazz, methods, sizeof(methods) / sizeof(methods[0])) != 0)
+        return JNI_ERR;
+    return JNI_OK;
+}
 
-    static const JNINativeMethod mainMethods[] = {
-            { OBFUSCATE("CheckOverlayPermission"), OBFUSCATE("(Landroid/content/Context;)V"), reinterpret_cast<void *>(CheckOverlayPermission)},
+int RegisterMain(JNIEnv *env) {
+    JNINativeMethod methods[] = {
+            {OBFUSCATE("CheckOverlayPermission"), OBFUSCATE("(Landroid/content/Context;)V"), reinterpret_cast<void *>(CheckOverlayPermission)},
     };
-
-    if (Register(env, "com/android/support/Main", mainMethods, sizeof(mainMethods) / sizeof(JNINativeMethod)) != 0)
+    jclass clazz = env->FindClass(OBFUSCATE("com/android/support/Main"));
+    if (!clazz)
+        return JNI_ERR;
+    if (env->RegisterNatives(clazz, methods, sizeof(methods) / sizeof(methods[0])) != 0)
         return JNI_ERR;
 
+    return JNI_OK;
+}
+
+extern "C"
+JNIEXPORT jint JNICALL
+JNI_OnLoad(JavaVM *vm, void *reserved) {
+    JNIEnv *env;
+    vm->GetEnv((void **) &env, JNI_VERSION_1_6);
+    if (RegisterMenu(env) != 0)
+        return JNI_ERR;
+    if (RegisterPreferences(env) != 0)
+        return JNI_ERR;
+    if (RegisterMain(env) != 0)
+        return JNI_ERR;
     return JNI_VERSION_1_6;
 }
