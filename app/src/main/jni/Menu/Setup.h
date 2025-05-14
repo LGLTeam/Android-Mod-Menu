@@ -1,5 +1,6 @@
 #include <sstream>
 #include "Menu/Menu.h"
+#include "Menu/get_device_api_level_inlines.h"
 
 //Jni stuff from MrDarkRX https://github.com/MrDarkRXx/DarkMod-Floating
 void setDialog(jobject ctx, JNIEnv *env, const char *title, const char *msg){
@@ -84,17 +85,21 @@ void CheckOverlayPermission(JNIEnv *env, jclass thiz, jobject ctx){
 
     LOGI(OBFUSCATE("Check overlay permission"));
 
-    jclass Settigs = env->FindClass(OBFUSCATE("android/provider/Settings"));
-    jmethodID canDraw =env->GetStaticMethodID(Settigs,OBFUSCATE("canDrawOverlays"),OBFUSCATE("(Landroid/content/Context;)Z"));
-    if (!env->CallStaticBooleanMethod(Settigs, canDraw, ctx)){
-        Toast(env,ctx,OBFUSCATE("Overlay permission is required in order to show mod menu."),1);
-        Toast(env,ctx,OBFUSCATE("Overlay permission is required in order to show mod menu."),1);
-        startActivityPermisson(env, ctx);
+    int sdkVer = api_level();
+    if (sdkVer >= 23){ //Android 6.0
+        jclass Settings = env->FindClass(OBFUSCATE("android/provider/Settings"));
+        jmethodID canDraw =env->GetStaticMethodID(Settings, OBFUSCATE("canDrawOverlays"), OBFUSCATE("(Landroid/content/Context;)Z"));
+        if (!env->CallStaticBooleanMethod(Settings, canDraw, ctx)){
+            Toast(env,ctx,OBFUSCATE("Overlay permission is required in order to show mod menu."),1);
+            Toast(env,ctx,OBFUSCATE("Overlay permission is required in order to show mod menu."),1);
+            startActivityPermisson(env, ctx);
 
-        pthread_t ptid;
-        pthread_create(&ptid, NULL, exit_thread, NULL);
-        return;
+            pthread_t ptid;
+            pthread_create(&ptid, NULL, exit_thread, NULL);
+            return;
+        }
     }
+
 
     LOGI(OBFUSCATE("Start service"));
 

@@ -170,7 +170,7 @@ jobjectArray GetFeatureList(JNIEnv *env, jobject context) {
             OBFUSCATE("CollapseAdd_Button_The button"),
 
             //Create new collapse again
-            OBFUSCATE("Collapse_Collapse 2"),
+            OBFUSCATE("Collapse_Collapse 2_True"),
             OBFUSCATE("CollapseAdd_SeekBar_The slider_1_100"),
             OBFUSCATE("CollapseAdd_InputValue_Input number"),
 

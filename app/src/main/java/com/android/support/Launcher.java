@@ -66,4 +66,9 @@ public class Launcher extends Service {
         }
         stopSelf();
     }
+
+    //Override our Start Command so the Service doesnt try to recreate itself when the App is closed
+    public int onStartCommand(Intent intent, int i, int i2) {
+        return Service.START_NOT_STICKY;
+    }
 }

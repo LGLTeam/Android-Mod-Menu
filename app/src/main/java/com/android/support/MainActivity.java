@@ -15,6 +15,14 @@ public class MainActivity extends Activity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        /*Thread.setDefaultUncaughtExceptionHandler(
+                new Thread.UncaughtExceptionHandler() {
+                    @Override
+                    public void uncaughtException(Thread thread, Throwable e) {
+                        Log.e("AppCrash", "Error just lunched ");
+                    }
+                });*/
+
 
         //To launch game activity
         if (!hasLaunched) {
@@ -33,6 +41,7 @@ public class MainActivity extends Activity {
         }
 
         //Launch mod menu.
-        Main.StartWithoutPermission(this);
+       // Main.StartWithoutPermission(this);
+        Main.Start(this);
     }
 }

@@ -5,8 +5,6 @@ Floating mod menu for il2cpp and other native android games. KittyMemory, MSHook
 
 Support Android 4.4.x up to Android S Preview. ARMv7, x86 and ARM64 architecture supported.
 
-# Preview
-
 ![](https://i.imgur.com/zeumkBG.gif)
 
 # Known bug
@@ -17,10 +15,22 @@ Download this repo as ZIP, or clone using any git tools
 
 Or download Releases here https://github.com/LGLTeam/Android-Mod-Menu/releases
 
-# Get started
+# Getting started
 **Go to this Wiki page to start reading:**
 
 https://github.com/LGLTeam/Android-Mod-Menu/wiki
+
+# Help, Support, FAQ
+
+See: [Frequently Asked Questions (FAQ)](https://github.com/LGLTeam/Android-Mod-Menu/wiki/FAQ) where common questions are answered.
+
+If you have installation or usage problems, try asking your questions on the forum sites, [Platinmods](https://platinmods.com/forums/modding-questions-discussions.11/), or [UnknownCheats](https://www.unknowncheats.me/forum/android/) or others.
+
+For example, if you have an issue with Hooking and game crashes, you should go to the **support forums**. Here there are no teachers who can help you with such issues.
+
+Issues are disabled permanently due to peoples who have no mind (mostly newbies) aren't even able to fill proper issue templates nor are they able to read the instructions. I get so many useless issues, even useless pull-requests.
+
+As a result, the contact infomation has been removed as well. However you can find me in our Telegram channel. I will only talk to peoples who are very skilled, have proper brain and have patience! I will BLOCK if I feel like you are annoying, disrespectful and acting like a kid
 
 # Credits
 Thanks to the following individuals whose code helped me develop this mod menu
