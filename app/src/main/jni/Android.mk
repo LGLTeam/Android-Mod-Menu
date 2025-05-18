@@ -8,6 +8,12 @@ LOCAL_MODULE    := Keystone
 LOCAL_SRC_FILES := $(KITTYMEMORY_PATH)/Deps/Keystone/libs-android/$(TARGET_ARCH_ABI)/libkeystone.a
 include $(PREBUILT_STATIC_LIBRARY)
 
+# Dobby
+include $(CLEAR_VARS)
+LOCAL_MODULE := Dobby
+LOCAL_SRC_FILES := Dobby/${TARGET_ARCH_ABI}/libdobby.a
+include $(PREBUILT_STATIC_LIBRARY)
+
 # Here is the name of your lib.
 # When you change the lib name, change also on System.loadLibrary("") under OnCreate method on StaticActivity.java
 # Both must have same name
@@ -24,6 +30,7 @@ LOCAL_ARM_MODE := arm
 
 LOCAL_C_INCLUDES += $(LOCAL_PATH)
 LOCAL_C_INCLUDES += $(LOCAL_PATH)/Includes/
+LOCAL_C_INCLUDES += $(LOCAL_PATH)/Dobby/
 
 # Here you add the cpp file to compile
 LOCAL_SRC_FILES := Main.cpp \
@@ -44,6 +51,6 @@ LOCAL_SRC_FILES := Main.cpp \
     KittyMemory/MemoryBackup.cpp \
 	And64InlineHook/And64InlineHook.cpp \
 
-LOCAL_STATIC_LIBRARIES := Keystone
+LOCAL_STATIC_LIBRARIES := Keystone Dobby
 
 include $(BUILD_SHARED_LIBRARY)
