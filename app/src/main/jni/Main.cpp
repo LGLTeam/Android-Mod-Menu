@@ -17,10 +17,6 @@
 #include "Menu/Jni.hpp"
 #include "Includes/Macros.h"
 
-// Dobby is a very powerful hook framework that including hook, stub, patch, and symbol resolve.
-// It can completely replace And64InlineHook and KittyMemory, so they are deprecated.
-#include "dobby.h" // https://github.com/jmpews/Dobby
-
 bool noDeath;
 int scoreMul = 1, coinsMul = 1;
 
@@ -140,8 +136,6 @@ void Update(void *instance) {
     return old_Update(instance);
 }
 
-// This pattern of orig_xxx and hook_xxx can be completely replaced by macro `install_hook_name` from dobby.h.
-// You can modify it if you want.
 void (*old_AddScore)(void *instance, int score);
 void AddScore(void *instance, int score) {
     return old_AddScore(instance, score * scoreMul);
@@ -158,18 +152,14 @@ void AddCoins(void *instance, int count) {
 ElfScanner g_il2cppELF;
 
 // we will run our hacks in a new thread so our while loop doesn't block process main thread
-void hack_thread() {
+void *hack_thread(void *) {
     LOGI(OBFUSCATE("pthread created"));
 
-    // This loop should be always enabled in unity game
-    // because libil2cpp.so is not loaded into memory immediately.
-    while (!isLibraryLoaded(targetLibName)) {
-        sleep(1); // Wait for target lib be loaded.
-    }
+    //Check if target lib is loaded
+    /*do {
+        sleep(1);
+    } while (!isLibraryLoaded(targetLibName));*/
 
-    // ElfScanner::createWithPath can actually be replaced by xdl_open() and xdl_info(),
-    // but that's from https://github.com/hexhacking/xDL.
-    // You can compile it if you want.
     do {
         sleep(1);
         // getElfBaseMap can also find lib base even if it was loaded from zipped base.apk
@@ -178,8 +168,6 @@ void hack_thread() {
 
     LOGI(OBFUSCATE("%s has been loaded"), (const char *) targetLibName);
 
-    // In Android Studio, to switch between arm64-v8a and armeabi-v7a syntax highlighting,
-    // You can modify the "Active ABI" in "Build Variants" to switch to another architecture for parsing.
 #if defined(__aarch64__)
     uintptr_t il2cppBase = g_il2cppELF.base();
 
@@ -191,9 +179,6 @@ void hack_thread() {
     HOOK(targetLibName, str2Offset(OBFUSCATE("0x107A2FC")), AddCoins, old_AddCoins);
     HOOK(targetLibName, str2Offset(OBFUSCATE("0x1078C44")), Update, old_Update);
 
-    // This function can completely replace MemoryPatch::createWithHex:
-    // int DobbyCodePatch(void *address, uint8_t *buffer, uint32_t buffer_size); (from dobby.h)
-    // And it is more powerful and intuitive.
     gPatches.noDeath = MemoryPatch::createWithHex(il2cppBase + str2Offset(OBFUSCATE("0x1079728")), "C0 03 5F D6");
 
     //HOOK(targetLibName, str2Offset(OBFUSCATE("0x1079728")), Kill, old_Kill);
@@ -210,18 +195,12 @@ void hack_thread() {
 #endif
 
     LOGI(OBFUSCATE("Done"));
+    return nullptr;
 }
 
-// Functions with `__attribute__((constructor))` are executed immediately when System.loadLibrary("lib_name") is called.
-// If there are multiple such functions at the same time, `constructor(priority)` (the priority is an integer)
-// will determine the execution priority, otherwise the execution order is undefined behavior.
 __attribute__((constructor))
 void lib_main() {
     // Create a new thread so it does not block the main thread, means the game would not freeze
-    // pthread_t ptid;
-    // pthread_create(&ptid, NULL, hack_thread, NULL);
-
-    // In modern C++, you should use std::thread(yourFunction).detach() instead of pthread_create
-    // because it is cross-platform and more intuitive.
-    std::thread(hack_thread).detach();
+    pthread_t ptid;
+    pthread_create(&ptid, NULL, hack_thread, NULL);
 }
