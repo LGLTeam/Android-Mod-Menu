@@ -1,7 +1,10 @@
-apply plugin: 'com.android.application'
+plugins {
+    id 'com.android.application'
+}
 
 android {
     compileSdkVersion 34
+	namespace "com.android.support"
     defaultConfig {
         applicationId "com.android.support"
         minSdkVersion 21
@@ -29,7 +32,10 @@ android {
             path file('src/main/jni/Android.mk')
         }
     }
-    namespace 'com.android.support'
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
 }
 
 //dependencies must be placed below 'android' brackets to get it work on AIDE
