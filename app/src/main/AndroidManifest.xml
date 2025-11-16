@@ -3,15 +3,13 @@
     xmlns:tools="http://schemas.android.com/tools">
 
     <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
-    <uses-permission android:name="android.permission.INTERNET" />
 
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
-        android:supportsRtl="true"
-        >
+        android:supportsRtl="true">
         <activity android:name="com.android.support.MainActivity"
             android:exported="true">
             <intent-filter>
@@ -22,7 +20,7 @@
         <service
             android:name="com.android.support.Launcher"
             android:enabled="true"
-            android:exported="true"
+            android:exported="false"
             android:stopWithTask="true" />
         <!-- stopWithTask="true" is to prevent game crashing after closing from task manager -->
     </application>
