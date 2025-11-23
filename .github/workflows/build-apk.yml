@@ -26,7 +26,14 @@ jobs:
         run: chmod +x ./gradlew
 
       - name: Build APK
-        run: ./gradlew assembleDebug
+        run: ./gradlew assembleDebug --warning-mode all
+
+      - name: Upload Gradle Problem Report
+        uses: actions/upload-artifact@v5
+        with:
+          name: gradle-problem-report-${{ matrix.build_type }}-${{ github.run_id }}
+          path: build/reports/problems/
+          if-no-files-found: warn
 
       - name: Upload APK
         uses: actions/upload-artifact@v5
