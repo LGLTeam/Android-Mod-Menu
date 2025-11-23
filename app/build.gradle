@@ -4,7 +4,7 @@ plugins {
 
 android {
     compileSdkVersion 34
-	namespace "com.android.support"
+	namespace = "com.android.support"
     defaultConfig {
         applicationId "com.android.support"
         minSdkVersion 21
@@ -16,16 +16,16 @@ android {
         }
     }
     buildFeatures {
-        buildConfig true
+        buildConfig = true
     }
     buildTypes {
         release {
-            shrinkResources true
+            shrinkResources = true
             minifyEnabled true
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
         debug {
-            shrinkResources false
+            shrinkResources = false
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
