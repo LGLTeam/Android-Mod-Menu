@@ -1,7 +1,10 @@
-apply plugin: 'com.android.application'
+plugins {
+    id 'com.android.application'
+}
 
 android {
     compileSdkVersion 34
+	namespace = "com.android.support"
     defaultConfig {
         applicationId "com.android.support"
         minSdkVersion 21
@@ -12,14 +15,17 @@ android {
             abiFilters 'armeabi-v7a', 'arm64-v8a'
         }
     }
+    buildFeatures {
+        buildConfig = true
+    }
     buildTypes {
         release {
-            shrinkResources true
+            shrinkResources = true
             minifyEnabled true
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
         debug {
-            shrinkResources false
+            shrinkResources = false
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
@@ -29,7 +35,10 @@ android {
             path file('src/main/jni/Android.mk')
         }
     }
-    namespace 'com.android.support'
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
 }
 
 //dependencies must be placed below 'android' brackets to get it work on AIDE
