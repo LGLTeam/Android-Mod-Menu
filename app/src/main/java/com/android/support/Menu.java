@@ -738,7 +738,7 @@ public class Menu {
             @Override
             public void onItemSelected(AdapterView<?> parentView, View selectedItemView, int position, long id) {
                 Preferences.changeFeatureInt(spinner.getSelectedItem().toString(), featNum, position);
-                ((TextView) parentView.getChildAt(0)).setTextColor(TEXT_COLOR_2);
+                ((MaterialTextView) parentView.getChildAt(0)).setTextColor(TEXT_COLOR_2);
             }
 
             @Override
