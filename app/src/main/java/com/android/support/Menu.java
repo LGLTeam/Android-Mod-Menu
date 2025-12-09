@@ -592,7 +592,7 @@ public class Menu {
         linearLayout.setOrientation(LinearLayout.VERTICAL);
         linearLayout.setGravity(Gravity.CENTER);
 
-        final MaterialTextView textView = new MaterialTextView(getContext();
+        final MaterialTextView textView = new MaterialTextView(getContext);
         textView.setText(Html.fromHtml(featName + ": <font color='" + NumberTxtColor + "'>" + ((loadedProg == 0) ? min : loadedProg)));
         textView.setTextColor(TEXT_COLOR_2);
 
