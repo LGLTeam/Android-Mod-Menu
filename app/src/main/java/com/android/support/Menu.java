@@ -51,8 +51,10 @@ import android.widget.ScrollView;
 import android.widget.SeekBar;
 import android.widget.Spinner;
 import android.widget.Switch;
-import android.widget.TextView;
+//import android.widget.TextView;
 import android.widget.Toast;
+
+import com.google.android.material.textview.MaterialTextView;
 
 import java.util.Arrays;
 import java.util.LinkedList;
@@ -186,7 +188,7 @@ public class Menu {
         wView.setOnTouchListener(onTouchListener());
 
         //********** Settings icon **********
-        TextView settings = new TextView(context); //Android 5 can't show ⚙, instead show other icon instead
+        MaterialTextView settings = new MaterialTextView(context); //Android 5 can't show ⚙, instead show other icon instead
         settings.setText(Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M ? "⚙" : "\uD83D\uDD27");
         settings.setTextColor(TEXT_COLOR);
         settings.setTypeface(Typeface.DEFAULT_BOLD);
@@ -233,7 +235,7 @@ public class Menu {
         title.setLayoutParams(rl);
 
         //********** Sub title **********
-        TextView subTitle = new TextView(context);
+        MaterialTextView subTitle = new MaterialTextView(context);
         subTitle.setEllipsize(TextUtils.TruncateAt.MARQUEE);
         subTitle.setMarqueeRepeatLimit(-1);
         subTitle.setSingleLine(true);
@@ -590,7 +592,7 @@ public class Menu {
         linearLayout.setOrientation(LinearLayout.VERTICAL);
         linearLayout.setGravity(Gravity.CENTER);
 
-        final TextView textView = new TextView(getContext);
+        final MaterialTextView textView = new MaterialTextView(getContext());
         textView.setText(Html.fromHtml(featName + ": <font color='" + NumberTxtColor + "'>" + ((loadedProg == 0) ? min : loadedProg)));
         textView.setTextColor(TEXT_COLOR_2);
 
