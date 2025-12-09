@@ -592,7 +592,7 @@ public class Menu {
         linearLayout.setOrientation(LinearLayout.VERTICAL);
         linearLayout.setGravity(Gravity.CENTER);
 
-        final MaterialTextView textView = new MaterialTextView(getContext());
+        final MaterialTextView textView = new MaterialTextView(getContext();
         textView.setText(Html.fromHtml(featName + ": <font color='" + NumberTxtColor + "'>" + ((loadedProg == 0) ? min : loadedProg)));
         textView.setTextColor(TEXT_COLOR_2);
 
@@ -1020,7 +1020,7 @@ editText.setFocusable(false);
         //Credit: LoraZalora
         final List<String> lists = new LinkedList<>(Arrays.asList(list.split(",")));
 
-        final TextView textView = new TextView(getContext);
+        final MaterialTextView textView = new MaterialTextView(getContext);
         textView.setText(featName + ":");
         textView.setTextColor(TEXT_COLOR_2);
 
