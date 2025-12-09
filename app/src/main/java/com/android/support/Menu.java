@@ -112,7 +112,7 @@ public class Menu {
     Context getContext;
 
     //initialize methods from the native library
-    native void Init(Context context, TextView title, TextView subTitle);
+    native void Init(Context context, MaterialTextView title, MaterialTextView subTitle);
 
     native String Icon();
 
@@ -226,7 +226,7 @@ public class Menu {
         titleText.setPadding(10, 5, 10, 5);
         titleText.setVerticalGravity(16);
 
-        TextView title = new TextView(context);
+        MaterialTextView title = new MaterialTextView(context);
         title.setTextColor(TEXT_COLOR);
         title.setTextSize(18.0f);
         title.setGravity(Gravity.CENTER);
@@ -1072,7 +1072,7 @@ editText.setFocusable(false);
         collapseSub.setVisibility(View.GONE);
         mCollapse = collapseSub;
 
-        final TextView textView = new TextView(getContext);
+        final MaterialTextView textView = new MaterialTextView(getContext);
         textView.setBackgroundColor(CollapseColor);
         textView.setText("▽ " + text + " ▽");
         textView.setGravity(Gravity.CENTER);
@@ -1108,7 +1108,7 @@ editText.setFocusable(false);
     }
 
     private void Category(LinearLayout linLayout, String text) {
-        TextView textView = new TextView(getContext);
+        MaterialTextView textView = new MaterialTextView(getContext);
         textView.setBackgroundColor(CategoryBG);
         textView.setText(Html.fromHtml(text));
         textView.setGravity(Gravity.CENTER);
@@ -1119,7 +1119,7 @@ editText.setFocusable(false);
     }
 
     private void TextView(LinearLayout linLayout, String text) {
-        TextView textView = new TextView(getContext);
+        MaterialTextView textView = new MaterialTextView(getContext);
         textView.setText(Html.fromHtml(text));
         textView.setTextColor(TEXT_COLOR_2);
         textView.setPadding(10, 5, 10, 5);
