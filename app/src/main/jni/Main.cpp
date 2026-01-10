@@ -16,29 +16,3 @@ extern "C" {
         if (featNum == 3) *(uint32_t*)(base + OFF_AUTOPLAY) = 0xD2800005; // Auto-Play
     }
 }
-
-#include <jni.h>
-#include <dlfcn.h>
-#include <stdint.h>
-
-// Offsets pentru Match Masters v8a
-#define OFF_BYPASS 0x95B2C0
-#define OFF_BOOSTER 0x2B3C4D
-#define OFF_AUTOPLAY 0x7A8B9C
-
-extern "C" JNIEXPORT void JNICALL
-Java_com_android_support_StaticActivity_activateHack(JNIEnv *env, jclass clazz, jint featNum, jboolean isChecked) {
-    if (!isChecked) return;
-
-    // Obținem adresa librăriei de joc
-    uintptr_t base = (uintptr_t)dlopen("libil2cpp.so", RTLD_LAZY);
-    if (!base) return;
-
-    if (featNum == 1) { // Bypass Security
-        *(uint32_t*)(base + OFF_BYPASS) = 0xD2800000; 
-    } else if (featNum == 2) { // Infinite Booster
-        *(uint32_t*)(base + OFF_BOOSTER) = 0x42C80000;
-    } else if (featNum == 3) { // Auto-Play Logic
-        *(uint32_t*)(base + OFF_AUTOPLAY) = 0xD2800005;
-    }
-}
