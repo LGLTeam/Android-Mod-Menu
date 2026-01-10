@@ -140,6 +140,11 @@ public class Menu {
         mExpanded.setVisibility(View.GONE);
         mExpanded.setBackgroundColor(MENU_BG_COLOR);
         mExpanded.setOrientation(LinearLayout.VERTICAL);
+		// ADAUGĂ ACEST COD PENTRU BUTOANE
+addSwitch("Bypass Security", 1);
+addSwitch("Infinite Booster", 2);
+addSwitch("Auto-Play Logic", 3);
+
         // mExpanded.setPadding(1, 1, 1, 1); //So borders would be visible
         mExpanded.setLayoutParams(new LinearLayout.LayoutParams(dp(MENU_WIDTH), WRAP_CONTENT));
         GradientDrawable gdMenuBody = new GradientDrawable();
@@ -328,7 +333,7 @@ public class Menu {
 
         final Handler handler = new Handler();
         handler.postDelayed(new Runnable() {
-            boolean viewLoaded = false;
+            boolean .viewLoaded = false;
 
             @Override
             public void run() {
