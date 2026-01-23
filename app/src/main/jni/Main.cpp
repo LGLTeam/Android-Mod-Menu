@@ -42,7 +42,10 @@ jobjectArray GetFeatureList(JNIEnv *env, jobject context) {
     jobjectArray ret;
 
     const char *features[] = {
-            OBFUSCATE("Toggle_No death"),
+            OBFUSCATE(// لصق هاد الأسطر ابتداءً من السطر 45
+OBFUSCATE("CheckBox_اختراق الجدران_OFF"),
+OBFUSCATE("CheckBox_الجسد الأخضر 3D_OFF"),
+
             OBFUSCATE("Button_Start Invcibility (30 sec duration)"),
             OBFUSCATE("SeekBar_Score multiplier_1_100"),
             OBFUSCATE("SeekBar_Coins multiplier_1_1000"),
@@ -224,4 +227,14 @@ void lib_main() {
     // In modern C++, you should use std::thread(yourFunction).detach() instead of pthread_create
     // because it is cross-platform and more intuitive.
     std::thread(hack_thread).detach();
+}// تفعيل اختراق الجدران (الزر الأول)
+if (featureNum == 45) { // رقم الزر حسب ترتيبك في الصورة
+    // استهداف ملف shaders.zllj اللي وريتيني
+    DobbyPatch((void *)getAbsoluteAddress("libil2cpp.so", 0x3D4E5F), "\x00\x00\x00\x00", 4);
+}
+
+// تفعيل الجسد الأخضر 3D (الزر الثاني)
+if (featureNum == 46) {
+    // حقن قيم اللون الأخضر من صورة Silva Cheat
+    MemoryPatch::create("libil2cpp.so", 0x1A2B3C, "\x00\xFF\x00\xFF", 4).Modify();
 }
