@@ -14,7 +14,7 @@ void Init(JNIEnv *env, jobject thiz, jobject ctx, jobject title, jobject subtitl
     //Dialog Example
     Dialog(env,
            ctx,
-           OBFUSCATE("Welcome to your mod menu"),
+           OBFUSCATE("ROYAL AIM - 8 BALL POOL"),
            OBFUSCATE("Thanks for the installation and call to action"),
            OBFUSCATE("Visit"), // set nullptr if btn-link is not needed
            OBFUSCATE("Close"),
