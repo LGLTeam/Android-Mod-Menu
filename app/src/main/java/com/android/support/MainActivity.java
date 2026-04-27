@@ -1,47 +1,74 @@
-package com.android.support;
+package com.android.sprijin;
 
 import android.app.Activity;
-import android.content.Intent;
 import android.os.Bundle;
-import android.util.Log;
+import android.view.View;
+import android.widget.Button;
+import android.widget.EditText;
+import android.widget.LinearLayout;
+import android.widget.TextView;
+import android.widget.Toast;
+import android.graphics.Color;
+import android.view.Gravity;
 
 public class MainActivity extends Activity {
+    // AICI ESTE PAROLA TA:
+    String cheiaCorecta = "ROYAL-2026"; 
 
-    //Only if you have changed MainActivity to yours and you wanna call game's activity.
-    public String GameActivity = "com.unity3d.player.UnityPlayerActivity";
-    public boolean hasLaunched = false;
-
-    //To call onCreate, please refer to README.md
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        /*Thread.setDefaultUncaughtExceptionHandler(
-                new Thread.UncaughtExceptionHandler() {
-                    @Override
-                    public void uncaughtException(Thread thread, Throwable e) {
-                        Log.e("AppCrash", "Error just lunched ");
-                    }
-                });*/
 
+        // Design-ul ecranului de Login (Negru și Auriu)
+        LinearLayout layout = new LinearLayout(this);
+        layout.setOrientation(LinearLayout.VERTICAL);
+        layout.setBackgroundColor(Color.BLACK); 
+        layout.setGravity(Gravity.CENTER);
+        layout.setPadding(60, 60, 60, 60);
 
-        //To launch game activity
-        if (!hasLaunched) {
-            try {
-                //Start service
-                hasLaunched = true;
-                //Launch mod menu.
-                MainActivity.this.startActivity(new Intent(MainActivity.this, Class.forName(MainActivity.this.GameActivity)));
-                Main.Start(this);
-                return;
-            } catch (ClassNotFoundException e) {
-                Log.e("Mod_menu", "Error. Game's main activity does not exist");
-                //Uncomment this if you are following METHOD 2 to launch menu
-                //Toast.makeText(MainActivity.this, "Error. Game's main activity does not exist", Toast.LENGTH_LONG).show();
+        // Titlu Principal
+        TextView titlu = new TextView(this);
+        titlu.setText("👑 ROYAL AIM 👑");
+        titlu.setTextSize(32);
+        titlu.setTextColor(Color.parseColor("#FFD700")); 
+        titlu.setPadding(0, 0, 0, 80);
+        titlu.setGravity(Gravity.CENTER);
+
+        // Caseta pentru parolă
+        final EditText inputKey = new EditText(this);
+        inputKey.setHint("Introdu Cheia VIP...");
+        inputKey.setHintTextColor(Color.GRAY);
+        inputKey.setTextColor(Color.WHITE);
+        inputKey.setGravity(Gravity.CENTER);
+
+        // Butonul de Login
+        Button btnLogin = new Button(this);
+        btnLogin.setText("CONECTARE REGALĂ");
+        btnLogin.setBackgroundColor(Color.parseColor("#FFD700")); 
+        btnLogin.setTextColor(Color.BLACK);
+        
+        layout.addView(titlu);
+        layout.addView(inputKey);
+        layout.addView(btnLogin);
+        setContentView(layout);
+
+        // Verificarea parolei
+        btnLogin.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                String keyIntrodusa = inputKey.getText().toString();
+                if (keyIntrodusa.equals(cheiaCorecta)) {
+                    Toast.makeText(MainActivity.this, "Acces Confirmat!", Toast.LENGTH_SHORT).show();
+                    
+                    // Această linie pornește meniul din joc (Principal este clasa ta din poză)
+                    Principal.Inceput(MainActivity.this);
+                    
+                    finish(); 
+                } else {
+                    Toast.makeText(MainActivity.this, "❌ Cheie Incorectă!", Toast.LENGTH_LONG).show();
+                }
             }
-        }
-
-        //Launch mod menu.
-       // Main.StartWithoutPermission(this);
-        Main.Start(this);
+        });
     }
 }
+

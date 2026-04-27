@@ -31,7 +31,7 @@ jobjectArray GetFeatureList(JNIEnv *env, jobject context) {
     jobjectArray ret;
 
     const char *features[] = {
-            OBFUSCATE("Toggle_No death"),
+            OBFUSCATE(Long Line),
             OBFUSCATE("Button_Start Invcibility (30 sec duration)"),
             OBFUSCATE("SeekBar_Score multiplier_1_100"),
             OBFUSCATE("SeekBar_Coins multiplier_1_1000"),
@@ -267,7 +267,7 @@ void hack_thread() {
     //Put your code here if you want the code to be compiled for armv7 only
 #endif
 
-    LOGI(OBFUSCATE("Done"));
+    LOGI(OBFUSCATE(SPECTRE VIP LOADED));
 }
 
 // Functions with `__attribute__((constructor))` are executed immediately when System.loadLibrary("lib_name") is called.
