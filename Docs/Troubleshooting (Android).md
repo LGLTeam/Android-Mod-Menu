@@ -11,6 +11,13 @@ If that caused by your hacks, check if your patches and hooks are correct.
 
 If you believe the game has protection, bypass it or drop it!
 
+### Logcat: Unexpected EOF!
+If you see "logcat: Unexpected EOF!" or missing log messages, it usually means the log buffer is full. You can increase the log buffer size using the following command via ADB:
+```bash
+adb logcat -G 4M
+```
+(You can replace 4M with a larger value like 16M if needed)
+
 ### AIDE Troubleshooting
 
 Problem with the project like app crashes: click **More... -> Project -> Refresh Build**. This will clear the project cache and fix problems
