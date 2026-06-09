@@ -45,21 +45,21 @@ public class Preferences {
     }
 
     public static int loadPrefInt(String featureName, int featureNum) {
+        int value = 0;
         if (loadPref) {
-            int value = Preferences.with(context).readInt(featureNum);
-            Changes(context, featureNum, featureName, value , 0, false, null);
-            return value;
+            value = Preferences.with(context).readInt(featureNum);
         }
-        return 0;
+        Changes(context, featureNum, featureName, value, 0, false, null);
+        return value;
     }
 
     public static long loadPrefLong(String featureName, int featureNum) {
+        long Lvalue = 0;
         if (loadPref) {
-            long Lvalue = Preferences.with(context).readLong(String.valueOf(featureNum));
-            Changes(context, featureNum, featureName, 0, Lvalue, false, null);
-            return Lvalue;
+            Lvalue = Preferences.with(context).readLong(String.valueOf(featureNum));
         }
-        return 0;
+        Changes(context, featureNum, featureName, 0, Lvalue, false, null);
+        return Lvalue;
     }
 
     public static boolean loadPrefBool(String featureName, int featureNum, boolean bDef) {
@@ -74,17 +74,17 @@ public class Preferences {
             bDef = bool;
         }
 
-        Changes(context, featureNum, featureName, 0,0, bDef, null);
+        Changes(context, featureNum, featureName, 0, 0, bDef, null);
         return bDef;
     }
 
     public static String loadPrefString(String featureName, int featureNum) {
+        String text = "";
         if (loadPref || featureNum <= 0) {
-            String text = Preferences.with(context).readString(featureNum);
-            Changes(context, featureNum, featureName, 0,0, false, text);
-            return text;
+            text = Preferences.with(context).readString(featureNum);
         }
-        return "";
+        Changes(context, featureNum, featureName, 0, 0, false, text);
+        return text;
     }
 
     private Preferences(Context context) {

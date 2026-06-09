@@ -717,7 +717,7 @@ public class Menu {
 
         final Spinner spinner = new Spinner(getContext, Spinner.MODE_DROPDOWN);
         spinner.setLayoutParams(layoutParams2);
-        spinner.getBackground().setColorFilter(1, PorterDuff.Mode.SRC_ATOP); //trick to show white down arrow color
+        spinner.getBackground().setColorFilter(Color.WHITE, PorterDuff.Mode.SRC_ATOP); //trick to show white down arrow color
         //Creating the ArrayAdapter instance having the list
         ArrayAdapter aa = new ArrayAdapter(getContext, android.R.layout.simple_spinner_dropdown_item, lists);
         aa.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
@@ -727,8 +727,9 @@ public class Menu {
         spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parentView, View selectedItemView, int position, long id) {
-                Preferences.changeFeatureInt(spinner.getSelectedItem().toString(), featNum, position);
-                ((TextView) parentView.getChildAt(0)).setTextColor(TEXT_COLOR_2);
+                Preferences.changeFeatureInt(featName, featNum, position);
+                if (parentView.getChildAt(0) != null)
+                    ((TextView) parentView.getChildAt(0)).setTextColor(TEXT_COLOR_2);
             }
 
             @Override
@@ -756,6 +757,7 @@ public class Menu {
             public void onClick(View view) {
                 AlertDialog.Builder alertName = new AlertDialog.Builder(getContext);
                 final EditText editText = new EditText(getContext);
+                editText.setText(String.valueOf(num));
                 if (maxValue != 0)
                     editText.setHint("Max value: " + maxValue);
                 editText.setInputType(InputType.TYPE_CLASS_NUMBER);
@@ -843,6 +845,7 @@ public class Menu {
             public void onClick(View view) {
                 AlertDialog.Builder alertName = new AlertDialog.Builder(getContext);
                 final EditText editText = new EditText(getContext);
+                editText.setText(String.valueOf(num));
                 if (maxValue != 0)
                     editText.setHint("Max value: " + maxValue);
                 editText.setInputType(InputType.TYPE_CLASS_NUMBER);
@@ -934,6 +937,7 @@ public class Menu {
                 AlertDialog.Builder alertName = new AlertDialog.Builder(getContext);
 
                 final EditText editText = new EditText(getContext);
+                editText.setText(string);
                 editText.setOnFocusChangeListener(new View.OnFocusChangeListener() {
                     @Override
                     public void onFocusChange(View v, boolean hasFocus) {
@@ -1037,7 +1041,13 @@ public class Menu {
         }
 
         int index = Preferences.loadPrefInt(featName, featNum);
-        if (index > 0) { //Preventing it to get an index less than 1. below 1 = null = crash
+        if (index >= 0) {
+            // index 0 is textView. index 1 is first radio button.
+            // If index is 0 (default), select first button and notify native
+            if (index == 0) {
+                index = 1;
+                Preferences.changeFeatureInt(featName, featNum, index);
+            }
             textView.setText(Html.fromHtml(featName + ": <font color='" + NumberTxtColor + "'>" + lists.get(index - 1)));
             ((RadioButton) radioGroup.getChildAt(index)).setChecked(true);
         }
