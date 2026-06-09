@@ -46,7 +46,7 @@ set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -w -s -Wno-error=format-security -fvisibilit
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -w -s -Wno-error=format-security -fvisibility=hidden -Werror -std=c++17 -Wno-error=c++11-narrowing -fpermissive -Wall -fexceptions")
 
 # Linker flags
-set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -Wl,--gc-sections,--strip-all")
+set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -Wl,--gc-sections,--strip-all -llog")
 
 # Link libraries
 target_link_libraries(MyLibName
