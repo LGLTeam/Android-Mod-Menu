@@ -19,6 +19,7 @@
 #include "dobby.h"
 
 int scoreMul = 1, coinsMul = 1;
+bool showRealNamesToggle = false;
 
 // Do not change or translate the first text unless you know what you are doing
 // Assigning feature numbers is optional. Without it, it will automatically count for you, starting from 0
@@ -31,7 +32,7 @@ jobjectArray GetFeatureList(JNIEnv *env, jobject context) {
     jobjectArray ret;
 
     const char *features[] = {
-            OBFUSCATE("Toggle_No death"),
+            OBFUSCATE("Toggle_Show Real Names"),
             OBFUSCATE("Button_Start Invcibility (30 sec duration)"),
             OBFUSCATE("SeekBar_Score multiplier_1_100"),
             OBFUSCATE("SeekBar_Coins multiplier_1_1000"),
@@ -188,6 +189,9 @@ void Changes(JNIEnv *env, jclass clazz, jobject obj, jint featNum, jstring featN
                 INST(targetLibName, "_example__sym", "AnyNameForDetect3", false);
             }
             break;
+		case 10:
+		     showRealNamesToggle = boolean;
+		     break;
         default:
             break;
     }
@@ -253,6 +257,17 @@ void hack_thread() {
     install_hook_AddScore(getAbsoluteAddress(targetLibName,OBFUSCATE("0x107A2E0")));
 
     HOOK(targetLibName, "0x1078C44", Update, old_Update);
+
+	// Show real names - hook get_VisualName to return NetworkPlayerName
+void (*old_get_VisualName)(void* instance);
+void* get_VisualName(void* instance) {
+    if (showRealNamesToggle) {
+        auto get_NetworkPlayerName = (void* (*)(void*))getAbsoluteAddress(targetLibName, OBFUSCATE("0x116B4C0"));
+        return get_NetworkPlayerName(instance);
+    }
+    return old_get_VisualName(instance);
+}
+HOOK(targetLibName, OBFUSCATE("0x1164F4C"), get_VisualName, old_get_VisualName);
     //HOOK(targetLibName, "0x1079728", Kill, old_Kill);
     //HOOK(targetLibName, "_example__sym", Kill, old_Kill);
     //HOOK_NO_ORIG("libFileC.so", "0x123456", FunctionExample);
