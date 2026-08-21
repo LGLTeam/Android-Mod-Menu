@@ -39,9 +39,5 @@ public class MainActivity extends Activity {
                 //Toast.makeText(MainActivity.this, "Error. Game's main activity does not exist", Toast.LENGTH_LONG).show();
             }
         }
-
-        //Launch mod menu.
-       // Main.StartWithoutPermission(this);
-        Main.Start(this);
     }
 }

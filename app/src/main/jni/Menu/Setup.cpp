@@ -38,20 +38,6 @@ int RegisterPreferences(JNIEnv *env) {
     return JNI_OK;
 }
 
-int RegisterMain(JNIEnv *env) {
-    JNINativeMethod methods[] = {
-            {OBFUSCATE("CheckOverlayPermission"), OBFUSCATE("(Landroid/content/Context;)V"),
-             reinterpret_cast<void *>(CheckOverlayPermission)},
-    };
-    jclass clazz = env->FindClass(OBFUSCATE("com/android/support/Main"));
-    if (!clazz)
-        return JNI_ERR;
-    if (env->RegisterNatives(clazz, methods, sizeof(methods) / sizeof(methods[0])) != 0)
-        return JNI_ERR;
-
-    return JNI_OK;
-}
-
 extern "C"
 JNIEXPORT jint JNICALL
 JNI_OnLoad(JavaVM *vm, void *reserved) {
@@ -60,8 +46,6 @@ JNI_OnLoad(JavaVM *vm, void *reserved) {
     if (RegisterMenu(env) != 0)
         return JNI_ERR;
     if (RegisterPreferences(env) != 0)
-        return JNI_ERR;
-    if (RegisterMain(env) != 0)
         return JNI_ERR;
     return JNI_VERSION_1_6;
 }
