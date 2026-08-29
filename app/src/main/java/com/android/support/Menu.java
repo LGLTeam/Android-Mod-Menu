@@ -3,6 +3,7 @@
 package com.android.support;
 
 import android.annotation.SuppressLint;
+import android.app.ActionBar;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
@@ -26,6 +27,7 @@ import android.text.method.DigitsKeyListener;
 import android.util.Base64;
 import android.util.Log;
 import android.util.TypedValue;
+import android.view.ContextThemeWrapper;
 import android.view.Gravity;
 import android.view.MotionEvent;
 import android.view.View;
@@ -368,6 +370,9 @@ public class Menu {
 
     @SuppressLint("WrongConstant")
     public void SetWindowManagerActivity() {
+        Activity activity = (Activity) getContext;
+        getContext = new ContextThemeWrapper(getContext, android.R.style.Theme_DeviceDefault_NoActionBar);
+
         vmParams = new WindowManager.LayoutParams(
                 WindowManager.LayoutParams.WRAP_CONTENT,
                 WindowManager.LayoutParams.WRAP_CONTENT,
@@ -384,8 +389,13 @@ public class Menu {
         vmParams.x = POS_X;
         vmParams.y = POS_Y;
 
-        mWindowManager = ((Activity) getContext).getWindowManager();
+        mWindowManager = activity.getWindowManager();
         mWindowManager.addView(rootFrame, vmParams);
+
+        ActionBar actionBar = activity.getActionBar();
+        if (actionBar != null) {
+            actionBar.hide();
+        }
     }
 
     private View.OnTouchListener onTouchListener() {
