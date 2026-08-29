@@ -154,8 +154,12 @@ public class Menu {
         startimage.getLayoutParams().width = applyDimension;
         //startimage.requestLayout();
         startimage.setScaleType(ImageView.ScaleType.FIT_XY);
-        byte[] decode = Base64.decode(Icon(), 0);
-        startimage.setImageBitmap(BitmapFactory.decodeByteArray(decode, 0, decode.length));
+        String icon = Icon();
+        if (icon != null)
+        {
+            byte[] decode = Base64.decode(icon, 0);
+            startimage.setImageBitmap(BitmapFactory.decodeByteArray(decode, 0, decode.length));
+        }
         ((ViewGroup.MarginLayoutParams) startimage.getLayoutParams()).topMargin = convertDipToPixels(10);
         //Initialize event handlers for buttons, etc.
         startimage.setOnTouchListener(onTouchListener());
@@ -167,21 +171,25 @@ public class Menu {
         });
 
         //********** The icon in Webview to open mod menu **********
-        WebView wView = new WebView(context); //Icon size width=\"50\" height=\"50\"
-        wView.setLayoutParams(new RelativeLayout.LayoutParams(WRAP_CONTENT, WRAP_CONTENT));
-        int applyDimension2 = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, ICON_SIZE, context.getResources().getDisplayMetrics()); //Icon size
-        wView.getLayoutParams().height = applyDimension2;
-        wView.getLayoutParams().width = applyDimension2;
-        wView.loadData("<html>" +
-                "<head></head>" +
-                "<body style=\"margin: 0; padding: 0\">" +
-                "<img src=\"" + IconWebViewData() + "\" width=\"" + ICON_SIZE + "\" height=\"" + ICON_SIZE + "\" >" +
-                "</body>" +
-                "</html>", "text/html", "utf-8");
-        wView.setBackgroundColor(0x00000000); //Transparent
-        wView.setAlpha(ICON_ALPHA);
-        wView.getSettings().setCacheMode(WebSettings.LOAD_NO_CACHE);
-        wView.setOnTouchListener(onTouchListener());
+        WebView wView = null;
+        String iconWebViewData = IconWebViewData();
+        if (iconWebViewData != null) {
+            wView = new WebView(context); //Icon size width=\"50\" height=\"50\"
+            wView.setLayoutParams(new RelativeLayout.LayoutParams(WRAP_CONTENT, WRAP_CONTENT));
+            int applyDimension2 = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, ICON_SIZE, context.getResources().getDisplayMetrics()); //Icon size
+            wView.getLayoutParams().height = applyDimension2;
+            wView.getLayoutParams().width = applyDimension2;
+            wView.loadData("<html>" +
+                    "<head></head>" +
+                    "<body style=\"margin: 0; padding: 0\">" +
+                    "<img src=\"" + iconWebViewData + "\" width=\"" + ICON_SIZE + "\" height=\"" + ICON_SIZE + "\" >" +
+                    "</body>" +
+                    "</html>", "text/html", "utf-8");
+            wView.setBackgroundColor(0x00000000); //Transparent
+            wView.setAlpha(ICON_ALPHA);
+            wView.getSettings().setCacheMode(WebSettings.LOAD_NO_CACHE);
+            wView.setOnTouchListener(onTouchListener());
+        }
 
         //********** Settings icon **********
         TextView settings = new TextView(context); //Android 5 can't show ⚙, instead show other icon instead
@@ -303,7 +311,7 @@ public class Menu {
         //********** Adding view components **********
         mRootContainer.addView(mCollapsed);
         mRootContainer.addView(mExpanded);
-        if (IconWebViewData() != null) {
+        if (iconWebViewData != null) {
             mCollapsed.addView(wView);
         } else {
             mCollapsed.addView(startimage);
