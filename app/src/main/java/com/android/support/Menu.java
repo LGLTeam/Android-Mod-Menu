@@ -3,6 +3,7 @@
 package com.android.support;
 
 import android.annotation.SuppressLint;
+import android.app.ActionBar;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
@@ -26,6 +27,7 @@ import android.text.method.DigitsKeyListener;
 import android.util.Base64;
 import android.util.Log;
 import android.util.TypedValue;
+import android.view.ContextThemeWrapper;
 import android.view.Gravity;
 import android.view.MotionEvent;
 import android.view.View;
@@ -145,70 +147,82 @@ public class Menu {
         //mExpanded.setBackground(gdMenuBody); //Apply GradientDrawable to it
 
         //********** The icon to open mod menu **********
-        startimage = new ImageView(context);
-        startimage.setLayoutParams(new RelativeLayout.LayoutParams(WRAP_CONTENT, WRAP_CONTENT));
-        int applyDimension = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, ICON_SIZE, context.getResources().getDisplayMetrics()); //Icon size
-        startimage.getLayoutParams().height = applyDimension;
-        startimage.getLayoutParams().width = applyDimension;
-        //startimage.requestLayout();
-        startimage.setScaleType(ImageView.ScaleType.FIT_XY);
-        byte[] decode = Base64.decode(Icon(), 0);
-        startimage.setImageBitmap(BitmapFactory.decodeByteArray(decode, 0, decode.length));
-        ((ViewGroup.MarginLayoutParams) startimage.getLayoutParams()).topMargin = convertDipToPixels(10);
-        //Initialize event handlers for buttons, etc.
-        startimage.setOnTouchListener(onTouchListener());
-        startimage.setOnClickListener(new View.OnClickListener() {
-            public void onClick(View view) {
-                mCollapsed.setVisibility(View.GONE);
-                mExpanded.setVisibility(View.VISIBLE);
+        startimage = new ImageView(context); {
+            startimage.setLayoutParams(new RelativeLayout.LayoutParams(WRAP_CONTENT, WRAP_CONTENT));
+            int applyDimension = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, ICON_SIZE, context.getResources().getDisplayMetrics()); //Icon size
+            startimage.getLayoutParams().height = applyDimension;
+            startimage.getLayoutParams().width = applyDimension;
+            startimage.setScaleType(ImageView.ScaleType.FIT_XY);
+            //startimage.requestLayout();
+            String icon = Icon();
+            if (Icon() != null) {
+                byte[] decode = Base64.decode(icon, 0);
+                startimage.setImageBitmap(BitmapFactory.decodeByteArray(decode, 0, decode.length));
             }
-        });
+            ((ViewGroup.MarginLayoutParams) startimage.getLayoutParams()).topMargin = convertDipToPixels(10);
+
+            //Initialize event handlers for buttons, etc.
+            startimage.setOnTouchListener(onTouchListener());
+            startimage.setOnClickListener(new View.OnClickListener() {
+                public void onClick(View view) {
+                    mCollapsed.setVisibility(View.GONE);
+                    mExpanded.setVisibility(View.VISIBLE);
+                }
+            });
+        }
 
         //********** The icon in Webview to open mod menu **********
-        WebView wView = new WebView(context); //Icon size width=\"50\" height=\"50\"
-        wView.setLayoutParams(new RelativeLayout.LayoutParams(WRAP_CONTENT, WRAP_CONTENT));
-        int applyDimension2 = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, ICON_SIZE, context.getResources().getDisplayMetrics()); //Icon size
-        wView.getLayoutParams().height = applyDimension2;
-        wView.getLayoutParams().width = applyDimension2;
-        wView.loadData("<html>" +
-                "<head></head>" +
-                "<body style=\"margin: 0; padding: 0\">" +
-                "<img src=\"" + IconWebViewData() + "\" width=\"" + ICON_SIZE + "\" height=\"" + ICON_SIZE + "\" >" +
-                "</body>" +
-                "</html>", "text/html", "utf-8");
-        wView.setBackgroundColor(0x00000000); //Transparent
-        wView.setAlpha(ICON_ALPHA);
-        wView.getSettings().setCacheMode(WebSettings.LOAD_NO_CACHE);
-        wView.setOnTouchListener(onTouchListener());
+        WebView wView = null; {
+            String iconWebViewData = IconWebViewData();
+            if (iconWebViewData != null) {
+                wView = new WebView(context);
+                wView.setLayoutParams(new RelativeLayout.LayoutParams(WRAP_CONTENT, WRAP_CONTENT));
+                int applyDimension = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, ICON_SIZE, context.getResources().getDisplayMetrics()); //Icon size
+                wView.getLayoutParams().height = applyDimension;
+                wView.getLayoutParams().width = applyDimension;
+
+                wView.loadData("<html>" +
+                        "<head></head>" +
+                        "<body style=\"margin: 0; padding: 0\">" +
+                        "<img src=\"" + IconWebViewData() + "\" width=\"" + ICON_SIZE + "\" height=\"" + ICON_SIZE + "\" >" +
+                        "</body>" +
+                        "</html>", "text/html", "utf-8");
+                wView.setBackgroundColor(0x00000000); //Transparent
+                wView.setAlpha(ICON_ALPHA);
+                wView.getSettings().setCacheMode(WebSettings.LOAD_NO_CACHE);
+                wView.setOnTouchListener(onTouchListener());
+            }
+        }
 
         //********** Settings icon **********
-        TextView settings = new TextView(context); //Android 5 can't show ⚙, instead show other icon instead
-        settings.setText(Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M ? "⚙" : "\uD83D\uDD27");
-        settings.setTextColor(TEXT_COLOR);
-        settings.setTypeface(Typeface.DEFAULT_BOLD);
-        settings.setTextSize(20.0f);
-        RelativeLayout.LayoutParams rlsettings = new RelativeLayout.LayoutParams(WRAP_CONTENT, WRAP_CONTENT);
-        rlsettings.addRule(ALIGN_PARENT_RIGHT);
-        settings.setLayoutParams(rlsettings);
-        settings.setOnClickListener(new View.OnClickListener() {
-            boolean settingsOpen;
+        TextView settings = new TextView(context); {
+            settings.setText(Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M ? "⚙" : "\uD83D\uDD27"); //Android 5 can't show ⚙, instead show other icon instead
+            settings.setTextColor(TEXT_COLOR);
+            settings.setTypeface(Typeface.DEFAULT_BOLD);
+            settings.setTextSize(20.0f);
+            RelativeLayout.LayoutParams rlsettings = new RelativeLayout.LayoutParams(WRAP_CONTENT, WRAP_CONTENT);
+            rlsettings.addRule(ALIGN_PARENT_RIGHT);
+            settings.setLayoutParams(rlsettings);
+            settings.setOnClickListener(new View.OnClickListener() {
+                boolean settingsOpen;
 
-            @Override
-            public void onClick(View v) {
-                try {
-                    settingsOpen = !settingsOpen;
-                    if (settingsOpen) {
-                        scrollView.removeView(mods);
-                        scrollView.addView(mSettings);
-                        scrollView.scrollTo(0, 0);
-                    } else {
-                        scrollView.removeView(mSettings);
-                        scrollView.addView(mods);
+                @Override
+                public void onClick(View v) {
+                    try {
+                        settingsOpen = !settingsOpen;
+                        if (settingsOpen) {
+                            scrollView.removeView(mods);
+                            scrollView.addView(mSettings);
+                            scrollView.scrollTo(0, 0);
+                        } else {
+                            scrollView.removeView(mSettings);
+                            scrollView.addView(mods);
+                        }
+                    } catch (IllegalStateException ignored) {
                     }
-                } catch (IllegalStateException ignored) {
                 }
-            }
-        });
+            });
+        }
 
         //********** Settings **********
         mSettings = new LinearLayout(context);
@@ -217,27 +231,28 @@ public class Menu {
 
         //********** Title **********
         RelativeLayout titleText = new RelativeLayout(context);
-        titleText.setPadding(10, 5, 10, 5);
-        titleText.setVerticalGravity(16);
-
-        TextView title = new TextView(context);
-        title.setTextColor(TEXT_COLOR);
-        title.setTextSize(18.0f);
-        title.setGravity(Gravity.CENTER);
-        RelativeLayout.LayoutParams rl = new RelativeLayout.LayoutParams(WRAP_CONTENT, WRAP_CONTENT);
-        rl.addRule(RelativeLayout.CENTER_HORIZONTAL);
-        title.setLayoutParams(rl);
+        TextView title = new TextView(context); {
+            titleText.setPadding(10, 5, 10, 5);
+            titleText.setVerticalGravity(16);
+            title.setTextColor(TEXT_COLOR);
+            title.setTextSize(18.0f);
+            title.setGravity(Gravity.CENTER);
+            RelativeLayout.LayoutParams rl = new RelativeLayout.LayoutParams(WRAP_CONTENT, WRAP_CONTENT);
+            rl.addRule(RelativeLayout.CENTER_HORIZONTAL);
+            title.setLayoutParams(rl);
+        }
 
         //********** Sub title **********
-        TextView subTitle = new TextView(context);
-        subTitle.setEllipsize(TextUtils.TruncateAt.MARQUEE);
-        subTitle.setMarqueeRepeatLimit(-1);
-        subTitle.setSingleLine(true);
-        subTitle.setSelected(true);
-        subTitle.setTextColor(TEXT_COLOR);
-        subTitle.setTextSize(10.0f);
-        subTitle.setGravity(Gravity.CENTER);
-        subTitle.setPadding(0, 0, 0, 5);
+        TextView subTitle = new TextView(context); {
+            subTitle.setEllipsize(TextUtils.TruncateAt.MARQUEE);
+            subTitle.setMarqueeRepeatLimit(-1);
+            subTitle.setSingleLine(true);
+            subTitle.setSelected(true);
+            subTitle.setTextColor(TEXT_COLOR);
+            subTitle.setTextSize(10.0f);
+            subTitle.setGravity(Gravity.CENTER);
+            subTitle.setPadding(0, 0, 0, 5);
+        }
 
         //********** Mod menu feature list **********
         scrollView = new ScrollView(context);
@@ -257,51 +272,51 @@ public class Menu {
 
         //**********  Hide/Kill button **********
         RelativeLayout.LayoutParams lParamsHideBtn = new RelativeLayout.LayoutParams(WRAP_CONTENT, WRAP_CONTENT);
-        lParamsHideBtn.addRule(ALIGN_PARENT_LEFT);
-
-        Button hideBtn = new Button(context);
-        hideBtn.setLayoutParams(lParamsHideBtn);
-        hideBtn.setBackgroundColor(Color.TRANSPARENT);
-        hideBtn.setText("HIDE/KILL (Hold)");
-        hideBtn.setTextColor(TEXT_COLOR);
-        hideBtn.setOnClickListener(new View.OnClickListener() {
-            public void onClick(View view) {
-                mCollapsed.setVisibility(View.VISIBLE);
-                mCollapsed.setAlpha(0);
-                mExpanded.setVisibility(View.GONE);
-                Toast.makeText(view.getContext(), "Icon hidden. Remember the hidden icon position", Toast.LENGTH_LONG).show();
-            }
-        });
-        hideBtn.setOnLongClickListener(new View.OnLongClickListener() {
-            public boolean onLongClick(View view) {
-                Toast.makeText(view.getContext(), "Menu killed", Toast.LENGTH_LONG).show();
-                rootFrame.removeView(mRootContainer);
-                mWindowManager.removeView(rootFrame);
-                return false;
-            }
-        });
+        Button hideBtn = new Button(context); {
+            lParamsHideBtn.addRule(ALIGN_PARENT_LEFT);
+            hideBtn.setLayoutParams(lParamsHideBtn);
+            hideBtn.setBackgroundColor(Color.TRANSPARENT);
+            hideBtn.setText("HIDE/KILL (Hold)");
+            hideBtn.setTextColor(TEXT_COLOR);
+            hideBtn.setOnClickListener(new View.OnClickListener() {
+                public void onClick(View view) {
+                    mCollapsed.setVisibility(View.VISIBLE);
+                    mCollapsed.setAlpha(0);
+                    mExpanded.setVisibility(View.GONE);
+                    Toast.makeText(view.getContext(), "Icon hidden. Remember the hidden icon position", Toast.LENGTH_LONG).show();
+                }
+            });
+            hideBtn.setOnLongClickListener(new View.OnLongClickListener() {
+                public boolean onLongClick(View view) {
+                    Toast.makeText(view.getContext(), "Menu killed", Toast.LENGTH_LONG).show();
+                    rootFrame.removeView(mRootContainer);
+                    mWindowManager.removeView(rootFrame);
+                    return false;
+                }
+            });
+        }
 
         //********** Close button **********
         RelativeLayout.LayoutParams lParamsCloseBtn = new RelativeLayout.LayoutParams(WRAP_CONTENT, WRAP_CONTENT);
-        lParamsCloseBtn.addRule(ALIGN_PARENT_RIGHT);
-
-        Button closeBtn = new Button(context);
-        closeBtn.setLayoutParams(lParamsCloseBtn);
-        closeBtn.setBackgroundColor(Color.TRANSPARENT);
-        closeBtn.setText("MINIMIZE");
-        closeBtn.setTextColor(TEXT_COLOR);
-        closeBtn.setOnClickListener(new View.OnClickListener() {
-            public void onClick(View view) {
-                mCollapsed.setVisibility(View.VISIBLE);
-                mCollapsed.setAlpha(ICON_ALPHA);
-                mExpanded.setVisibility(View.GONE);
-            }
-        });
+        Button closeBtn = new Button(context); {
+            lParamsCloseBtn.addRule(ALIGN_PARENT_RIGHT);
+            closeBtn.setLayoutParams(lParamsCloseBtn);
+            closeBtn.setBackgroundColor(Color.TRANSPARENT);
+            closeBtn.setText("MINIMIZE");
+            closeBtn.setTextColor(TEXT_COLOR);
+            closeBtn.setOnClickListener(new View.OnClickListener() {
+                public void onClick(View view) {
+                    mCollapsed.setVisibility(View.VISIBLE);
+                    mCollapsed.setAlpha(ICON_ALPHA);
+                    mExpanded.setVisibility(View.GONE);
+                }
+            });
+        }
 
         //********** Adding view components **********
         mRootContainer.addView(mCollapsed);
         mRootContainer.addView(mExpanded);
-        if (IconWebViewData() != null) {
+        if (wView != null) {
             mCollapsed.addView(wView);
         } else {
             mCollapsed.addView(startimage);
@@ -317,6 +332,7 @@ public class Menu {
         mExpanded.addView(relativeLayout);
 
         Init(context, title, subTitle);
+        SetWindowManagerActivity();
     }
 
     public void ShowMenu() {
@@ -368,6 +384,9 @@ public class Menu {
 
     @SuppressLint("WrongConstant")
     public void SetWindowManagerActivity() {
+        Activity activity = (Activity) getContext;
+        getContext = new ContextThemeWrapper(getContext, android.R.style.Theme_DeviceDefault_NoActionBar);
+
         vmParams = new WindowManager.LayoutParams(
                 WindowManager.LayoutParams.WRAP_CONTENT,
                 WindowManager.LayoutParams.WRAP_CONTENT,
@@ -384,8 +403,13 @@ public class Menu {
         vmParams.x = POS_X;
         vmParams.y = POS_Y;
 
-        mWindowManager = ((Activity) getContext).getWindowManager();
+        mWindowManager = activity.getWindowManager();
         mWindowManager.addView(rootFrame, vmParams);
+
+        ActionBar actionBar = activity.getActionBar();
+        if (actionBar != null) {
+            actionBar.hide();
+        }
     }
 
     private View.OnTouchListener onTouchListener() {
