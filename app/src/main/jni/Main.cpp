@@ -37,9 +37,8 @@ jobjectArray GetFeatureList(JNIEnv *env, jobject context) {
             OBFUSCATE("SeekBar_Coins multiplier_1_1000"),
             OBFUSCATE("Category_Examples"), //Not counted
             OBFUSCATE("Toggle_The toggle"),
-            OBFUSCATE(
-                    "100_Toggle_True_The toggle 2"), //This one have feature number assigned, and switched on by default
-            OBFUSCATE("110_Toggle_The toggle 3"), //This one too
+            OBFUSCATE("100_Toggle_True_The toggle 2"), //This one have feature number assigned, with forced True switching
+            OBFUSCATE("110_Toggle_The toggle 3"), //The same as the previous example, default False switch
             OBFUSCATE("SeekBar_The slider_1_100"),
             OBFUSCATE("SeekBar_Kittymemory slider example_1_5"),
             OBFUSCATE("Spinner_The spinner_Items 1,Items 2,Items 3"),

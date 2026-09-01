@@ -61,7 +61,7 @@ void setText(JNIEnv *env, jobject obj, const char* text){
     (*env).CallVoidMethod(obj, setText,  (*env).CallStaticObjectMethod(html, fromHtml, jstr));
 }
 
-void startService(JNIEnv *env, jobject ctx){
+void startService(JNIEnv *env, jobject ctx) {
     jclass native_context = env->GetObjectClass(ctx);
     jclass intentClass = env->FindClass(OBFUSCATE("android/content/Intent"));
     jclass actionString = env->FindClass(OBFUSCATE("com/android/support/Launcher"));
@@ -108,7 +108,7 @@ void startActivityPermisson(JNIEnv *env, jobject ctx){
 }
 
 //Needed jclass parameter because this is a static java method
-void CheckOverlayPermission(JNIEnv *env, jclass thiz, jobject ctx){
+void CheckOverlayPermission(JNIEnv *env, jclass thiz, jobject ctx) {
     //If overlay permission option is greyed out, make sure to add android.permission.SYSTEM_ALERT_WINDOW in manifest
 
     LOGI(OBFUSCATE("Check overlay permission"));

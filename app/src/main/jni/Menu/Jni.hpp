@@ -15,8 +15,6 @@ void Toast(JNIEnv *env, jobject thiz, const char *text, int length);
 
 void startService(JNIEnv *env, jobject ctx);
 
-int get_api_sdk(JNIEnv *env);
-
 void CheckOverlayPermission(JNIEnv *env, jclass thiz, jobject ctx);
 
 #endif //ANDROID_MOD_MENU_JNI_HPP

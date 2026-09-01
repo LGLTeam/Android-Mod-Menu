@@ -18,7 +18,6 @@ public class Main {
     public static void StartWithoutPermission(Context context) {
         CrashHandler.init(context);
         if (context instanceof Activity) {
-            //Check if context is an Activity.
             Menu menu = new Menu(context);
             menu.SetWindowManagerActivity();
             menu.ShowMenu();
