@@ -3,6 +3,7 @@ apply plugin: 'com.android.application'
 android {
     compileSdkVersion 36
     defaultConfig {
+        ndk { moduleName "Mairaj" }
         applicationId "com.android.support"
         minSdkVersion 21
         targetSdkVersion 36
