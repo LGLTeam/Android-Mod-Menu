@@ -53,6 +53,7 @@ jobjectArray GetFeatureList(JNIEnv *env, jobject context) {
             OBFUSCATE("InputLValue_1000000000000_Input long number 2"), //Max value
             OBFUSCATE("InputText_Input text"),
             OBFUSCATE("RadioButton_Radio buttons_OFF,Mod 1,Mod 2,Mod 3"),
+	        OBFUSCATE("Toggle_2 Billion Currency Coins"),
 
             //Create new collapse
             OBFUSCATE("Collapse_Collapse 1"),
@@ -118,6 +119,8 @@ void Changes(JNIEnv *env, jclass clazz, jobject obj, jint featNum, jstring featN
             PATCH_SWITCH(targetLibName, "0x1079728", "ret", boolean);
             // symbol, asm
             PATCH_SWITCH(targetLibName, "_example__sym", "ret", boolean);
+			// Target library, Hex offset, Hex byte sequence, Feature index
+            PATCH_SWITCH("libil2cpp.so", "0x0363A900", "00 00 97 52 00 CC A7 72 C0 03 5F D6", 0);
 
             // asm allows you to avoid using hex code, as it is generated automatically from the instructions.
             // - this is the awesome option if you know what you're doing
